@@ -11,10 +11,11 @@ kotlin = "2.2.10"
 composeBom = "2024.09.00"
 coroutines = "1.8.1"
 firebaseBom = "33.1.2"
-room = "2.6.1"
+room = "2.8.4"
 ksp = "2.3.6"
 hilt = "2.59.2"
 googleServices = "4.4.4"
+hiltNavigationCompose = "1.2.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -43,6 +44,7 @@ firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics
 
 # Hilt
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
+hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
 hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hilt" }
 
 # Compose
