@@ -3,7 +3,7 @@ package br.dev.allan.controlefinanceiro.di
 import android.content.Context
 import androidx.room.Room
 import br.dev.allan.controlefinanceiro.data.local.AppDatabase
-import br.dev.allan.controlefinanceiro.data.local.ExpenseDao
+import br.dev.allan.controlefinanceiro.data.local.TransactionDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -17,8 +17,11 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): AppDatabase =
-        Room.databaseBuilder(context, AppDatabase::class.java, "finance_db").build()
+        Room.databaseBuilder(
+            context, AppDatabase::class.java, "finance_db")
+            .fallbackToDestructiveMigration(true)
+            .build()
 
     @Provides
-    fun provideExpenseDao(db: AppDatabase): ExpenseDao = db.expenseDao()
+    fun provideExpenseDao(db: AppDatabase): TransactionDao = db.expenseDao()
 }

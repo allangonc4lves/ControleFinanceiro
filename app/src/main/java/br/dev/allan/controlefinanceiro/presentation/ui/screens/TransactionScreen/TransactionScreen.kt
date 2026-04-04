@@ -1,4 +1,4 @@
-package br.dev.allan.controlefinanceiro.presentation.ui.screens.expenseScreen
+package br.dev.allan.controlefinanceiro.presentation.ui.screens.TransactionScreen
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,15 +22,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import br.dev.allan.controlefinanceiro.presentation.viewmodel.ExpenseViewModel
+import br.dev.allan.controlefinanceiro.presentation.viewmodel.TransactionViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import androidx.hilt.navigation.compose.hiltViewModel
 
 @Composable
-fun ExpenseScreen(viewModel: ExpenseViewModel = hiltViewModel()) {
-    val expenses by viewModel.expenses.collectAsState()
+fun ExpenseScreen(viewModel: TransactionViewModel = hiltViewModel()) {
+    val transaction by viewModel.transactions.collectAsState()
 
     var title by remember { mutableStateOf("") }
     var amount by remember { mutableStateOf("") }
@@ -41,17 +41,17 @@ fun ExpenseScreen(viewModel: ExpenseViewModel = hiltViewModel()) {
 
         Button(onClick = {
             val amt = amount.toDoubleOrNull() ?: 0.0
-            viewModel.addExpense(title, amt, System.currentTimeMillis())
+            viewModel.addTransaction(title, amt, System.currentTimeMillis())
             title = ""
             amount = ""
         }) {
-            Text("Adicionar Despesa")
+            Text("Adicionar nova transação")
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
         LazyColumn() {
-            items(expenses) { expense ->
+            items(transaction) { expense ->
                 Card(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
                     Column(modifier = Modifier.padding(8.dp)) {
                         Text(expense.title, style = MaterialTheme.typography.titleMedium)
@@ -61,7 +61,7 @@ fun ExpenseScreen(viewModel: ExpenseViewModel = hiltViewModel()) {
                             style = MaterialTheme.typography.bodySmall
                         )
                         Row {
-                            Button(onClick = { viewModel.deleteExpense(expense) }) {
+                            Button(onClick = { viewModel.deleteTransaction(expense) }) {
                                 Text("Excluir")
                             }
                         }

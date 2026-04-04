@@ -9,16 +9,16 @@ import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface ExpenseDao {
-    @Query("SELECT * FROM expenses ORDER BY date DESC")
-    fun getAllExpenses(): Flow<List<Expense>>
+interface TransactionDao {
+    @Query("SELECT * FROM transactions ORDER BY date DESC")
+    fun getAllExpenses(): Flow<List<TransactionEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertExpense(expense: Expense)
+    suspend fun insertExpense(transaction: TransactionEntity)
 
     @Update
-    suspend fun updateExpense(expense: Expense)
+    suspend fun updateExpense(transaction: TransactionEntity)
 
     @Delete
-    suspend fun deleteExpense(expense: Expense)
+    suspend fun deleteExpense(transaction: TransactionEntity)
 }

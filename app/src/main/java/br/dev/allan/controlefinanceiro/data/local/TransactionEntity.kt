@@ -3,10 +3,12 @@ package br.dev.allan.controlefinanceiro.data.local
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "expenses")
-data class Expense(
+@Entity(tableName = "transactions")
+data class TransactionEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val title: String,
     val amount: Double,
-    val date: Long // timestamp
+    val date: Long,
+    val category: String? = null,
+    val iconResId: Int? = null
 )

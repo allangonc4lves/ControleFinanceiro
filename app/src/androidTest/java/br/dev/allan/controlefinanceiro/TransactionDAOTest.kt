@@ -5,8 +5,8 @@ import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import br.dev.allan.controlefinanceiro.data.local.AppDatabase
-import br.dev.allan.controlefinanceiro.data.local.Expense
-import br.dev.allan.controlefinanceiro.data.local.ExpenseDao
+import br.dev.allan.controlefinanceiro.data.local.TransactionEntity
+import br.dev.allan.controlefinanceiro.data.local.TransactionDao
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.flow.first
@@ -17,9 +17,9 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
-class ExpenseDaoTest {
+class TransactionDaoTest {
     private lateinit var db: AppDatabase
-    private lateinit var dao: ExpenseDao
+    private lateinit var dao: TransactionDao
 
     @Before
     fun setup() {
@@ -37,7 +37,7 @@ class ExpenseDaoTest {
 
     @Test
     fun insertExpense_andReadItBack() = runBlocking {
-        val expense = Expense(title = "Teste", amount = 100.0, date = System.currentTimeMillis())
+        val expense = TransactionEntity(title = "Teste", amount = 100.0, date = System.currentTimeMillis())
         dao.insertExpense(expense)
 
         val allExpenses = dao.getAllExpenses().first()
@@ -47,7 +47,7 @@ class ExpenseDaoTest {
 
     @Test
     fun updateExpense_changesPersisted() = runBlocking {
-        val expense = Expense(title = "Original", amount = 50.0, date = System.currentTimeMillis())
+        val expense = TransactionEntity(title = "Original", amount = 50.0, date = System.currentTimeMillis())
         dao.insertExpense(expense)
 
         val inserted = dao.getAllExpenses().first().first()
@@ -60,7 +60,7 @@ class ExpenseDaoTest {
 
     @Test
     fun deleteExpense_removesFromDatabase() = runBlocking {
-        val expense = Expense(title = "Apagar", amount = 10.0, date = System.currentTimeMillis())
+        val expense = TransactionEntity(title = "Apagar", amount = 10.0, date = System.currentTimeMillis())
         dao.insertExpense(expense)
 
         val inserted = dao.getAllExpenses().first().first()

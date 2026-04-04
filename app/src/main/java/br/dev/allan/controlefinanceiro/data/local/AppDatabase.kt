@@ -3,7 +3,11 @@ package br.dev.allan.controlefinanceiro.data.local
 import androidx.room.Database
 import androidx.room.RoomDatabase
 
-@Database(entities = [Expense::class], version = 1)
+@Database(
+    entities = [TransactionEntity::class],
+    version = 4,
+    exportSchema = true
+)
 abstract class AppDatabase : RoomDatabase() {
-    abstract fun expenseDao(): ExpenseDao
+    abstract fun expenseDao(): TransactionDao
 }

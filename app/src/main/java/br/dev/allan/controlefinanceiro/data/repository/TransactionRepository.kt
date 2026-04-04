@@ -1,0 +1,24 @@
+package br.dev.allan.controlefinanceiro.data.repository
+
+import br.dev.allan.controlefinanceiro.data.local.TransactionDao
+import br.dev.allan.controlefinanceiro.data.local.mapper.toDomain
+import br.dev.allan.controlefinanceiro.data.local.mapper.toEntity
+import br.dev.allan.controlefinanceiro.domain.model.Transaction
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import javax.inject.Inject
+
+class TransactionRepository @Inject constructor(private val dao: TransactionDao) {
+
+    fun getExpenses(): Flow<List<Transaction>> =
+        dao.getAllExpenses().map { list -> list.map { it.toDomain() } }
+
+    suspend fun addExpense(transaction: Transaction) =
+        dao.insertExpense(transaction.toEntity())
+
+    suspend fun updateExpense(transaction: Transaction) =
+        dao.updateExpense(transaction.toEntity())
+
+    suspend fun deleteExpense(transaction: Transaction) =
+        dao.deleteExpense(transaction.toEntity())
+}
