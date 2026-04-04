@@ -4,7 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import br.dev.allan.controlefinanceiro.presentation.ui.screens.TransactionScreen.ExpenseScreen
+import br.dev.allan.controlefinanceiro.presentation.ui.screens.MainScreen
 import br.dev.allan.controlefinanceiro.presentation.ui.theme.ControleFinanceiroTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -15,8 +15,10 @@ class HomeScreen : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             ControleFinanceiroTheme {
-                ExpenseScreen()
+               // ExpenseScreen()
+                MainScreen()
             }
         }
     }
 }
+
