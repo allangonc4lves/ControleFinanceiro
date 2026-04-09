@@ -41,24 +41,6 @@ fun ExpenseScreen(viewModel: TransactionViewModel = hiltViewModel()) {
         OutlinedTextField(value = title, onValueChange = { title = it }, label = { Text("Título") })
         OutlinedTextField(value = amount, onValueChange = { amount = it }, label = { Text("Valor") })
 
-        Button(onClick = {
-            val amt = amount.toDoubleOrNull() ?: 0.0
-            viewModel.addTransaction(
-                title,
-                amt,
-                System.currentTimeMillis(),
-                "Category",
-                0,
-                false,
-                false,
-                0,
-                TransactionINorEX.EXPENSE
-            )
-            title = ""
-            amount = ""
-        }) {
-            Text("Adicionar nova transação")
-        }
 
         Spacer(modifier = Modifier.height(16.dp))
 

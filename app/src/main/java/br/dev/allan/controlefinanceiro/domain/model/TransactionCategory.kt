@@ -77,3 +77,12 @@ enum class TransactionCategory (val type: TransactionINorEX, val displayName: St
     SALES(TransactionINorEX.INCOME, "Sales (Selling Items)", Icons.Outlined.Analytics),
     OTHERS_INCOME(TransactionINorEX.INCOME, "Other Income", Icons.Outlined.ArrowUpward)
 }
+
+fun getCategoryByName(name: String?): TransactionCategory {
+    return try {
+        TransactionCategory.valueOf(name ?: "OTHERS_EXPENSE")
+    } catch (e: Exception) {
+        // Se o nome não existir ou for nulo, retorna uma categoria padrão
+        TransactionCategory.OTHERS_EXPENSE
+    }
+}

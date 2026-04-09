@@ -19,6 +19,10 @@ class TransactionViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted
         .WhileSubscribed(5000), emptyList())
 
+    fun addTransaction(transaction: Transaction) {
+        viewModelScope.launch { repository.insertTransaction(transaction) }
+    }
+/*
     fun addTransaction(
         title: String,
         amount: Double,
@@ -31,9 +35,9 @@ class TransactionViewModel @Inject constructor(
         type: TransactionINorEX
     ) {
         viewModelScope.launch {
-            val cleanIsFixed = if (type == TransactionINorEX.EXPENSE) isFixed else false
-            val cleanIsInstallment = if (type == TransactionINorEX.EXPENSE) isInstallment else false
-            val cleanInstallmentCount = if (type == TransactionINorEX.EXPENSE) installmentCount else 0
+            //val cleanIsFixed = if (type == TransactionINorEX.INCOME) isFixed else false
+            val cleanIsInstallment = if (type == TransactionINorEX.INCOME) isInstallment else false
+            val cleanInstallmentCount = if (type == TransactionINorEX.INCOME) installmentCount else 0
 
             repository.insertTransaction(
                 Transaction(
@@ -42,7 +46,7 @@ class TransactionViewModel @Inject constructor(
                     date = date,
                     category = category,
                     iconResId = iconResId,
-                    isFixed = cleanIsFixed,
+                    isFixed = isFixed,
                     isInstallment = cleanIsInstallment,
                     installmentCount = cleanInstallmentCount,
                     type = type
@@ -50,7 +54,7 @@ class TransactionViewModel @Inject constructor(
             )
         }
     }
-
+*/
     fun updateTransaction(transaction: Transaction) {
         viewModelScope.launch { repository.updateTransaction(transaction) }
     }

@@ -31,10 +31,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import br.dev.allan.controlefinanceiro.domain.model.Transaction
 import br.dev.allan.controlefinanceiro.domain.model.TransactionCategory
 import br.dev.allan.controlefinanceiro.domain.model.TransactionINorEX
 import br.dev.allan.controlefinanceiro.presentation.ui.state.AddTransactionType
+import br.dev.allan.controlefinanceiro.presentation.viewmodel.TransactionViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -43,12 +45,12 @@ import java.util.Locale
 @Composable
 fun AddTransactionDialog(
     onDismiss: () -> Unit,
-    onConfirm: (Transaction) -> Unit
+    onConfirm: (Transaction) -> Unit,
+    viewModel: TransactionViewModel = hiltViewModel(),
 ) {
     // Estados básicos
     var title by remember { mutableStateOf("") }
     var amount by remember { mutableStateOf("") }
-    //var instinstallmentCount by remember { mutableStateOf("") }
     var checkTransactionType by remember { mutableStateOf(AddTransactionType.DEFAULT) }
 
     // Configuração do DatePicker
@@ -61,7 +63,6 @@ fun AddTransactionDialog(
 
     // Configuração múmero de parcelas
     var installmentCount by remember { mutableIntStateOf(2) }
-    var showinstallmentCount by remember { mutableStateOf(false) }
 
     if (showDatePicker) {
         DatePickerDialog(
@@ -146,7 +147,6 @@ fun AddTransactionDialog(
                             if (isChecked) AddTransactionType.FIXED else AddTransactionType.DEFAULT
                     }
                 )
-                Log.i("teste", checkTransactionType.toString())
 
                 if(selectedType.ordinal == 1){
                     CustomSwitch(
@@ -156,7 +156,6 @@ fun AddTransactionDialog(
                             installmentCount = newCount
                         },
                         showQuantity = if (checkTransactionType == AddTransactionType.INSTALLMENT) true else false,
-                        //checked = checkTransactionType == AddTransactionType.INSTALLMENT,)
                         checked = checkTransactionType == AddTransactionType.INSTALLMENT,
                         onCheckedChange = { isChecked ->
                             checkTransactionType =
@@ -178,19 +177,25 @@ fun AddTransactionDialog(
         confirmButton = {
             Button(
                 onClick = {
-                    onConfirm(
-                        Transaction(
-                            title = title,
-                            amount = amount.toDoubleOrNull() ?: 0.0,
-                            date = datePickerState.selectedDateMillis ?: System.currentTimeMillis(),
-                            category = selectedCategory?.displayName,
-                            type = TransactionINorEX.entries[checkTransactionType.ordinal],
-                            isFixed = false,
-                            isInstallment = checkTransactionType == AddTransactionType.INSTALLMENT,
-                            installmentCount = installmentCount ?: 0
-                        )
-
+                    Log.i("teste", "installmentCount final: $installmentCount")
+                    val newTransaction = Transaction(
+                        title = title,
+                        amount = amount.toDoubleOrNull() ?: 0.0,
+                        date = datePickerState.selectedDateMillis ?: System.currentTimeMillis(),
+                        category = selectedCategory?.name ?: "OTHERS_EXPENSE", // Passa apenas o nome
+                        isFixed = checkTransactionType == AddTransactionType.FIXED,
+                        isInstallment = checkTransactionType == AddTransactionType.INSTALLMENT,
+                        installmentCount = if (checkTransactionType == AddTransactionType.INSTALLMENT) {
+                            if (installmentCount in 2..360) installmentCount else 2
+                        } else {
+                            0
+                        },
+                        type = selectedType
                     )
+
+                    viewModel.addTransaction(newTransaction)
+                    onConfirm(newTransaction)
+                    Log.i("teste", "installmentCount final: $installmentCount")
                 }
             ) {
                 Text("Confirmar")

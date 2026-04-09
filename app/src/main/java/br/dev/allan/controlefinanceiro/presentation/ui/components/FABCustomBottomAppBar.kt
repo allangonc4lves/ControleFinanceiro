@@ -41,8 +41,11 @@ fun FABCustomBottomAppBar(){
 
     if (showDialog) {
         AddTransactionDialog(
-            { showDialog = false }
-        ) { }
+            onDismiss = { showDialog = false },
+            onConfirm = { transaction ->
+                showDialog = false
+            }
+        )
     }
 }
 

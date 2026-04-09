@@ -2,22 +2,16 @@
   "formatVersion": 1,
   "database": {
     "version": 4,
-    "identityHash": "3e0b887175bf43701f0750a37008c588",
+    "identityHash": "e67a4c02f3f48326f2c658b4e004dbdd",
     "entities": [
       {
         "tableName": "transactions",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `type` TEXT NOT NULL, `title` TEXT NOT NULL, `amount` REAL NOT NULL, `date` INTEGER NOT NULL, `category` TEXT, `iconResId` INTEGER, `isFixed` INTEGER NOT NULL, `isInstallment` INTEGER NOT NULL, `installmentCount` INTEGER)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `title` TEXT NOT NULL, `amount` REAL NOT NULL, `date` INTEGER NOT NULL, `category` TEXT, `isFixed` INTEGER NOT NULL, `isInstallment` INTEGER NOT NULL, `installmentCount` INTEGER NOT NULL, `type` TEXT NOT NULL)",
         "fields": [
           {
             "fieldPath": "id",
             "columnName": "id",
             "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "type",
-            "columnName": "type",
-            "affinity": "TEXT",
             "notNull": true
           },
           {
@@ -44,11 +38,6 @@
             "affinity": "TEXT"
           },
           {
-            "fieldPath": "iconResId",
-            "columnName": "iconResId",
-            "affinity": "INTEGER"
-          },
-          {
             "fieldPath": "isFixed",
             "columnName": "isFixed",
             "affinity": "INTEGER",
@@ -63,7 +52,14 @@
           {
             "fieldPath": "installmentCount",
             "columnName": "installmentCount",
-            "affinity": "INTEGER"
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT",
+            "notNull": true
           }
         ],
         "primaryKey": {
@@ -76,7 +72,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '3e0b887175bf43701f0750a37008c588')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'e67a4c02f3f48326f2c658b4e004dbdd')"
     ]
   }
 }

@@ -69,8 +69,7 @@ fun CustomSwitch(
                         newValue.toIntOrNull()?.let { onQuantityChange(it) }
                     }
                 },
-                modifier = Modifier
-                    .fillMaxWidth(0.6f),
+                modifier = Modifier.fillMaxWidth(0.7f),
                 leadingIcon = {
                     IconButton(onClick = { if (quantityValue > 2) onQuantityChange(quantityValue - 1) }) {
                         Icon(
@@ -80,7 +79,7 @@ fun CustomSwitch(
                     }
                 },
                 trailingIcon = {
-                    IconButton(onClick = { onQuantityChange(quantityValue + 1) }) {
+                    IconButton(onClick = { if (quantityValue < 360) onQuantityChange(quantityValue + 1) }) {
                         Icon(
                             Icons.Default.Add,
                             contentDescription = "Aumentar",

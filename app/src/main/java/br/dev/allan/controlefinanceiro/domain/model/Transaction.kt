@@ -8,10 +8,9 @@ data class Transaction(
     val amount: Double,
     val date: Long,
     val category: String? = null,
-    val iconResId: Int? = null,
     val isFixed: Boolean = false,
     val isInstallment: Boolean = false,
-    val installmentCount: Int? = null,
+    val installmentCount: Int = 0,
     val type: TransactionINorEX,
 )
 
