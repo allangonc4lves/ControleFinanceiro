@@ -27,6 +27,8 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import androidx.hilt.navigation.compose.hiltViewModel
+import br.dev.allan.controlefinanceiro.domain.model.TransactionINorEX
+import br.dev.allan.controlefinanceiro.domain.model.TransactionType
 
 @Composable
 fun ExpenseScreen(viewModel: TransactionViewModel = hiltViewModel()) {
@@ -41,7 +43,17 @@ fun ExpenseScreen(viewModel: TransactionViewModel = hiltViewModel()) {
 
         Button(onClick = {
             val amt = amount.toDoubleOrNull() ?: 0.0
-            viewModel.addTransaction(title, amt, System.currentTimeMillis())
+            viewModel.addTransaction(
+                title,
+                amt,
+                System.currentTimeMillis(),
+                "Category",
+                0,
+                false,
+                false,
+                0,
+                TransactionINorEX.EXPENSE
+            )
             title = ""
             amount = ""
         }) {

@@ -27,7 +27,7 @@ class TransactionDaoTest {
         db = Room.inMemoryDatabaseBuilder(context, AppDatabase::class.java)
             .allowMainThreadQueries()
             .build()
-        dao = db.expenseDao()
+        dao = db.transactionDao()
     }
 
     @After

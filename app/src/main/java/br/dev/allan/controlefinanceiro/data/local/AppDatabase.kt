@@ -9,5 +9,5 @@ import androidx.room.RoomDatabase
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
-    abstract fun expenseDao(): TransactionDao
+    abstract fun transactionDao(): TransactionDao
 }

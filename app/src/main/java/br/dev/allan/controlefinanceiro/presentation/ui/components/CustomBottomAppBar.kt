@@ -3,20 +3,25 @@ package br.dev.allan.controlefinanceiro.presentation.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.rounded.Home
+import androidx.compose.material.icons.rounded.LineStyle
+import androidx.compose.material.icons.rounded.Menu
+import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import br.dev.allan.controlefinanceiro.domain.model.ButtunBarNavigation
 
 @Composable
-fun MyBottomAppBar(
+fun CustomBottomAppBar(
     onAccountClick: () -> Unit,
     onCardsClick: () -> Unit,
     onPixClick: () -> Unit,
@@ -24,10 +29,10 @@ fun MyBottomAppBar(
     onMoreClick: () -> Unit
 ) {
     val items = listOf(
-        ButtunBarNavigation("Conta", Icons.Default.Search),
-        ButtunBarNavigation("Cartões", Icons.Default.Search),
-        ButtunBarNavigation("Pagamentos", Icons.Default.Search),
-        ButtunBarNavigation("Mais", Icons.Default.Search)
+        ButtunBarNavigation("Home", Icons.Rounded.Home),
+        ButtunBarNavigation("Transações", Icons.Rounded.LineStyle),
+        ButtunBarNavigation("Procurar", Icons.Rounded.Search),
+        ButtunBarNavigation("Mais", Icons.Rounded.Menu)
     )
 
     BottomAppBar(
@@ -39,13 +44,13 @@ fun MyBottomAppBar(
         }
     ) {
         Row (
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceAround,
+            modifier = Modifier.fillMaxWidth().padding(start = 8.dp, end = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Itens da Esquerda
             ButtunBarNavigation(items[0])
-            ButtunBarNavigation(items[1], isSelected = true) // Exemplo de selecionado
+            ButtunBarNavigation(items[1], isSelected = true)
 
             // Espaço para o FAB central (importante para não sobrepor ícones)
             Spacer(modifier = Modifier.width(48.dp))
@@ -64,7 +69,9 @@ fun ButtunBarNavigation(item: ButtunBarNavigation, isSelected: Boolean = false) 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
-        modifier = Modifier.clickable { /* Navegação */ }
+        modifier = Modifier
+            .size(70.dp, 50.dp)
+            .clickable { /* Navegação */ }
     ) {
         // Indicador superior se estiver selecionado (a linha roxa do print)
         if (isSelected) {
@@ -78,6 +85,11 @@ fun ButtunBarNavigation(item: ButtunBarNavigation, isSelected: Boolean = false) 
         }
 
         Icon(item.icon, contentDescription = item.label, tint = color)
-        Text(text = item.label, color = color, style = MaterialTheme.typography.labelSmall)
+        Text(
+            text = item.label,
+            color = color,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            style = MaterialTheme.typography.labelSmall)
     }
 }

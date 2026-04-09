@@ -13,12 +13,12 @@ class TransactionRepository @Inject constructor(private val dao: TransactionDao)
     fun getExpenses(): Flow<List<Transaction>> =
         dao.getAllExpenses().map { list -> list.map { it.toDomain() } }
 
-    suspend fun addExpense(transaction: Transaction) =
+    suspend fun insertTransaction(transaction: Transaction) =
         dao.insertExpense(transaction.toEntity())
 
-    suspend fun updateExpense(transaction: Transaction) =
+    suspend fun updateTransaction(transaction: Transaction) =
         dao.updateExpense(transaction.toEntity())
 
-    suspend fun deleteExpense(transaction: Transaction) =
+    suspend fun deleteTransaction(transaction: Transaction) =
         dao.deleteExpense(transaction.toEntity())
 }

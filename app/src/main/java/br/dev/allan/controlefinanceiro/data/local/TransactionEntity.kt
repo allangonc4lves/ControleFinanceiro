@@ -2,6 +2,8 @@ package br.dev.allan.controlefinanceiro.data.local
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import br.dev.allan.controlefinanceiro.domain.model.TransactionINorEX
+import br.dev.allan.controlefinanceiro.domain.model.TransactionType
 
 @Entity(tableName = "transactions")
 data class TransactionEntity(
@@ -10,5 +12,9 @@ data class TransactionEntity(
     val amount: Double,
     val date: Long,
     val category: String? = null,
-    val iconResId: Int? = null
+    val iconResId: Int? = null,
+    val isFixed: Boolean = false,
+    val isInstallment: Boolean = false,
+    val installmentCount: Int? = null,
+    val type: TransactionINorEX,
 )
