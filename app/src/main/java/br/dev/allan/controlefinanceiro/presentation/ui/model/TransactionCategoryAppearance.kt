@@ -37,51 +37,54 @@ import androidx.compose.material.icons.outlined.ShoppingBag
 import androidx.compose.material.icons.outlined.Subscriptions
 import androidx.compose.material.icons.outlined.TheaterComedy
 import androidx.compose.material.icons.outlined.WaterDrop
+import androidx.compose.ui.graphics.Color
 
 data class CategoryAppearance(
     val displayName: String,
     val icon: ImageVector,
-    val type: TransactionINorEX
+    val type: TransactionINorEX,
+    val color: Color
 )
 
 // Função de extensão que mapeia a lógica de negócio para a visual
 fun TransactionCategory.getAppearance(): CategoryAppearance {
     return when (this) {
-        TransactionCategory.CREDIT_CARD_PAYMENT -> CategoryAppearance("Credit Card", Icons.Outlined.CreditCard, TransactionINorEX.EXPENSE)
-        TransactionCategory.SAVINGS -> CategoryAppearance("Savings", Icons.Outlined.Savings, TransactionINorEX.EXPENSE)
-        TransactionCategory.HOUSING -> CategoryAppearance("Housing", Icons.Outlined.House, TransactionINorEX.EXPENSE)
-        TransactionCategory.ENERGY_BILL -> CategoryAppearance("Energy bill", Icons.Outlined.ElectricalServices, TransactionINorEX.EXPENSE)
-        TransactionCategory.WATER_BILL -> CategoryAppearance("Water bill", Icons.Outlined.WaterDrop, TransactionINorEX.EXPENSE)
-        TransactionCategory.GAS_BILL -> CategoryAppearance("Gas bill", Icons.Outlined.GasMeter, TransactionINorEX.EXPENSE)
-        TransactionCategory.FOOD -> CategoryAppearance("Food", Icons.Outlined.Fastfood, TransactionINorEX.EXPENSE)
-        TransactionCategory.DRINK -> CategoryAppearance("Drink", Icons.Outlined.LocalBar, TransactionINorEX.EXPENSE)
-        TransactionCategory.TRANSPORTATION -> CategoryAppearance("Transportation", Icons.Outlined.AirportShuttle, TransactionINorEX.EXPENSE)
-        TransactionCategory.UBER -> CategoryAppearance("Uber", Icons.Outlined.DirectionsCar, TransactionINorEX.EXPENSE)
-        TransactionCategory.GROCERIES -> CategoryAppearance("Groceries", Icons.Outlined.LocalGroceryStore, TransactionINorEX.EXPENSE)
-        TransactionCategory.ENTERTAINMENT -> CategoryAppearance("Entertainment & Leisure", Icons.Outlined.TheaterComedy, TransactionINorEX.EXPENSE)
-        TransactionCategory.SHOPPING -> CategoryAppearance("Shopping", Icons.Outlined.ShoppingBag, TransactionINorEX.EXPENSE)
-        TransactionCategory.HEALTH_PERSONAL_CARE -> CategoryAppearance("Health & Personal Care", Icons.Outlined.HealthAndSafety, TransactionINorEX.EXPENSE)
-        TransactionCategory.EDUCATION -> CategoryAppearance("Education", Icons.Outlined.MenuBook, TransactionINorEX.EXPENSE)
-        TransactionCategory.SUBSCRIPTIONS -> CategoryAppearance("Subscriptions & Services", Icons.Outlined.Subscriptions, TransactionINorEX.EXPENSE)
-        TransactionCategory.DEBT_REPAYMENT -> CategoryAppearance("Debt & Loans", Icons.Outlined.AccountBalance, TransactionINorEX.EXPENSE)
-        TransactionCategory.INVESTMENT_OUT -> CategoryAppearance("Investment Contribution", Icons.Outlined.BusinessCenter, TransactionINorEX.EXPENSE)
-        TransactionCategory.TRAVEL -> CategoryAppearance("Travel", Icons.Outlined.LocalAirport, TransactionINorEX.EXPENSE)
-        TransactionCategory.PETS -> CategoryAppearance("Pets", Icons.Outlined.Pets, TransactionINorEX.EXPENSE)
-        TransactionCategory.GIFTS_DONATION -> CategoryAppearance("Gifts & Donations", Icons.Outlined.CardGiftcard, TransactionINorEX.EXPENSE)
-        TransactionCategory.MAINTENANCE -> CategoryAppearance("Home/Auto Maintenance", Icons.Outlined.Build, TransactionINorEX.EXPENSE)
-        TransactionCategory.TAXES -> CategoryAppearance("Taxes & Fees", Icons.Outlined.MoneyOffCsred, TransactionINorEX.EXPENSE)
-        TransactionCategory.INSURANCE -> CategoryAppearance("Insurance", Icons.Outlined.Lock, TransactionINorEX.EXPENSE)
-        TransactionCategory.OTHERS_EXPENSE -> CategoryAppearance("Other Expenses", Icons.Outlined.ArrowDownward, TransactionINorEX.EXPENSE)
+        TransactionCategory.CREDIT_CARD_PAYMENT -> CategoryAppearance("Credit Card", Icons.Outlined.CreditCard, TransactionINorEX.EXPENSE, Color(0xFFFF0000))
+        TransactionCategory.SAVINGS -> CategoryAppearance("Savings", Icons.Outlined.Savings, TransactionINorEX.EXPENSE, Color(0xFF22FF00))
+        TransactionCategory.HOUSING -> CategoryAppearance("Housing", Icons.Outlined.House, TransactionINorEX.EXPENSE, Color(0xFFD000FF))
+        TransactionCategory.ENERGY_BILL -> CategoryAppearance("Energy bill", Icons.Outlined.ElectricalServices, TransactionINorEX.EXPENSE, Color(0xFF5E35B1))
+        TransactionCategory.WATER_BILL -> CategoryAppearance("Water bill", Icons.Outlined.WaterDrop, TransactionINorEX.EXPENSE, Color(0xFF3949AB))
+        TransactionCategory.GAS_BILL -> CategoryAppearance("Gas bill", Icons.Outlined.GasMeter, TransactionINorEX.EXPENSE, Color(0xFF1E88E5))
+        TransactionCategory.FOOD -> CategoryAppearance("Food", Icons.Outlined.Fastfood, TransactionINorEX.EXPENSE, Color(0xFF039BE5))
+        TransactionCategory.DRINK -> CategoryAppearance("Drink", Icons.Outlined.LocalBar, TransactionINorEX.EXPENSE, Color(0xFF00ACC1))
+        TransactionCategory.TRANSPORTATION -> CategoryAppearance("Transportation", Icons.Outlined.AirportShuttle, TransactionINorEX.EXPENSE, Color(0xFF00897B))
+        TransactionCategory.UBER -> CategoryAppearance("Uber", Icons.Outlined.DirectionsCar, TransactionINorEX.EXPENSE, Color(0xFF43A047))
+        TransactionCategory.GROCERIES -> CategoryAppearance("Groceries", Icons.Outlined.LocalGroceryStore, TransactionINorEX.EXPENSE, Color(0xFF7CB342))
+        TransactionCategory.ENTERTAINMENT -> CategoryAppearance("Entertainment & Leisure", Icons.Outlined.TheaterComedy, TransactionINorEX.EXPENSE, Color(0xFFC0CA33))
+        TransactionCategory.SHOPPING -> CategoryAppearance("Shopping", Icons.Outlined.ShoppingBag, TransactionINorEX.EXPENSE, Color(0xFFFDD835))
+        TransactionCategory.HEALTH_PERSONAL_CARE -> CategoryAppearance("Health & Personal Care", Icons.Outlined.HealthAndSafety, TransactionINorEX.EXPENSE, Color(0xFF95FF00))
+        TransactionCategory.EDUCATION -> CategoryAppearance("Education", Icons.Outlined.MenuBook, TransactionINorEX.EXPENSE, Color(0xFFFB8C00))
+        TransactionCategory.SUBSCRIPTIONS -> CategoryAppearance("Subscriptions & Services", Icons.Outlined.Subscriptions, TransactionINorEX.EXPENSE, Color(0xFF3700FF))
+        TransactionCategory.DEBT_REPAYMENT -> CategoryAppearance("Debt & Loans", Icons.Outlined.AccountBalance, TransactionINorEX.EXPENSE, Color(0xFF6D4C41))
+        TransactionCategory.INVESTMENT_OUT -> CategoryAppearance("Investment Contribution", Icons.Outlined.BusinessCenter, TransactionINorEX.EXPENSE, Color(0xFF757575))
+        TransactionCategory.TRAVEL -> CategoryAppearance("Travel", Icons.Outlined.LocalAirport, TransactionINorEX.EXPENSE, Color(0xFF546E7A))
+        TransactionCategory.PETS -> CategoryAppearance("Pets", Icons.Outlined.Pets, TransactionINorEX.EXPENSE, Color(0xFF26A69A))
+        TransactionCategory.GIFTS_DONATION -> CategoryAppearance("Gifts & Donations", Icons.Outlined.CardGiftcard, TransactionINorEX.EXPENSE, Color(0xFF9CCC65))
+        TransactionCategory.MAINTENANCE -> CategoryAppearance("Home/Auto Maintenance", Icons.Outlined.Build, TransactionINorEX.EXPENSE, Color(0xFFFF7043))
+        TransactionCategory.TAXES -> CategoryAppearance("Taxes & Fees", Icons.Outlined.MoneyOffCsred, TransactionINorEX.EXPENSE, Color(0xFFAB47BC))
+        TransactionCategory.INSURANCE -> CategoryAppearance("Insurance", Icons.Outlined.Lock, TransactionINorEX.EXPENSE, Color(0xFF29B6F6))
+        TransactionCategory.OTHERS_EXPENSE -> CategoryAppearance("Other Expenses", Icons.Outlined.ArrowDownward, TransactionINorEX.EXPENSE, Color(0xFF1C1A1A))
 
-        TransactionCategory.SALARY -> CategoryAppearance("Salary", Icons.Outlined.AttachMoney, TransactionINorEX.INCOME)
-        TransactionCategory.FREELANCE -> CategoryAppearance("Freelance & Side Hustles", Icons.Outlined.FreeBreakfast, TransactionINorEX.INCOME)
-        TransactionCategory.INVESTMENTS -> CategoryAppearance("Investment Returns/Dividends", Icons.Outlined.BusinessCenter, TransactionINorEX.INCOME)
-        TransactionCategory.GIFTS_RECEIVED -> CategoryAppearance("Gifts Received", Icons.Outlined.CardGiftcard, TransactionINorEX.INCOME)
-        TransactionCategory.RENTAL_INCOME -> CategoryAppearance("Rental Income", Icons.Outlined.AreaChart, TransactionINorEX.INCOME)
-        TransactionCategory.REFUNDS -> CategoryAppearance("Refunds & Reimbursements", Icons.Outlined.CompareArrows, TransactionINorEX.INCOME)
-        TransactionCategory.BONUS -> CategoryAppearance("Bonuses", Icons.Outlined.MonetizationOn, TransactionINorEX.INCOME)
-        TransactionCategory.GRANTS -> CategoryAppearance("Grants & Scholarships", Icons.Outlined.SafetyDivider, TransactionINorEX.INCOME)
-        TransactionCategory.SALES -> CategoryAppearance("Sales (Selling Items)", Icons.Outlined.Analytics, TransactionINorEX.INCOME)
-        TransactionCategory.OTHERS_INCOME -> CategoryAppearance("Other Income", Icons.Outlined.ArrowUpward, TransactionINorEX.INCOME)
+
+        TransactionCategory.SALARY -> CategoryAppearance("Salary", Icons.Outlined.AttachMoney, TransactionINorEX.INCOME, Color(0xFF2E7D32))
+        TransactionCategory.FREELANCE -> CategoryAppearance("Freelance & Side Hustles", Icons.Outlined.FreeBreakfast, TransactionINorEX.INCOME, Color(0xFF388E3C))
+        TransactionCategory.INVESTMENTS -> CategoryAppearance("Investment Returns/Dividends", Icons.Outlined.BusinessCenter, TransactionINorEX.INCOME, Color(0xFF00796B))
+        TransactionCategory.GIFTS_RECEIVED -> CategoryAppearance("Gifts Received", Icons.Outlined.CardGiftcard, TransactionINorEX.INCOME, Color(0xFF8E24AA))
+        TransactionCategory.RENTAL_INCOME -> CategoryAppearance("Rental Income", Icons.Outlined.AreaChart, TransactionINorEX.INCOME, Color(0xFF1976D2))
+        TransactionCategory.REFUNDS -> CategoryAppearance("Refunds & Reimbursements", Icons.Outlined.CompareArrows, TransactionINorEX.INCOME, Color(0xFF0288D1))
+        TransactionCategory.BONUS -> CategoryAppearance("Bonuses", Icons.Outlined.MonetizationOn, TransactionINorEX.INCOME, Color(0xFFFBC02D))
+        TransactionCategory.GRANTS -> CategoryAppearance("Grants & Scholarships", Icons.Outlined.SafetyDivider, TransactionINorEX.INCOME, Color(0xFF6D4C41))
+        TransactionCategory.SALES -> CategoryAppearance("Sales (Selling Items)", Icons.Outlined.Analytics, TransactionINorEX.INCOME, Color(0xFF43A047))
+        TransactionCategory.OTHERS_INCOME -> CategoryAppearance("Other Income", Icons.Outlined.ArrowUpward, TransactionINorEX.INCOME, Color(0xFF8BC34A))
     }
 }

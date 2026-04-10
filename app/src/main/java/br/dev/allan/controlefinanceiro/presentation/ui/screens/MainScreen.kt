@@ -31,20 +31,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import br.dev.allan.controlefinanceiro.data.settings.SettingsManager
 import br.dev.allan.controlefinanceiro.domain.model.TransactionINorEX
+import br.dev.allan.controlefinanceiro.presentation.ui.components.CategoryChartCard
 import br.dev.allan.controlefinanceiro.presentation.ui.components.CustomBottomAppBar
-import br.dev.allan.controlefinanceiro.presentation.ui.components.CustomCard
 import br.dev.allan.controlefinanceiro.presentation.ui.components.CustomTopBar
 import br.dev.allan.controlefinanceiro.presentation.ui.components.DrawBoxTop
 import br.dev.allan.controlefinanceiro.presentation.ui.components.CustomFabBottomBar
 import br.dev.allan.controlefinanceiro.presentation.ui.components.CustomTextContent
 import br.dev.allan.controlefinanceiro.presentation.ui.components.CustomTextTitle
 import br.dev.allan.controlefinanceiro.presentation.ui.components.FinancialSummaryCard
-import br.dev.allan.controlefinanceiro.presentation.ui.components.MonthSelector
 import br.dev.allan.controlefinanceiro.presentation.ui.theme.ControleFinanceiroTheme
 import br.dev.allan.controlefinanceiro.presentation.viewmodel.TransactionViewModel
 import java.text.SimpleDateFormat
@@ -66,7 +64,7 @@ fun MainScreen(
     val context = LocalContext.current
     val settingsManager = remember { SettingsManager(context) }
 
-    Log.i("teste", transactions.toString())
+    val expensesMap by viewModel.chartData.collectAsState()
 
     ControleFinanceiroTheme {
         val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -109,6 +107,11 @@ fun MainScreen(
                                 settingsManager = settingsManager
                             )
                         }
+                        Spacer(modifier = Modifier.size(8.dp))
+                    }
+
+                    item{
+                        CategoryChartCard(expensesMap)
                     }
 
                     item {

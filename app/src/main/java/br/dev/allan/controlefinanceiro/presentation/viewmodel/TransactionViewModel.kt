@@ -23,6 +23,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import androidx.compose.runtime.snapshotFlow
+import br.dev.allan.controlefinanceiro.presentation.ui.model.CategoryAppearance
+import br.dev.allan.controlefinanceiro.presentation.ui.model.getAppearance
 import kotlinx.coroutines.flow.combine
 
 @HiltViewModel
@@ -81,7 +83,25 @@ class TransactionViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList() // Se ficar sempre emptyList, o filtro nunca roda
+            initialValue = emptyList()
+        )
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val chartData: StateFlow<Map<CategoryAppearance, Double>> = snapshotFlow { selectedMonth }
+        .flatMapLatest { month ->
+            val (start, end) = getMonthRange(month) // Agora start e end existem aqui dentro!
+            repository.getExpensesByCategory(start, end)
+        }
+        .map { list ->
+            // Converte a lista do banco para o Map que a UI espera
+            list.associate { item ->
+                item.category.getAppearance() to item.total
+            }
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyMap()
         )
     fun addTransaction(transaction: Transaction) {
         viewModelScope.launch { repository.insertTransaction(transaction) }
