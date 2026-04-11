@@ -6,8 +6,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import br.dev.allan.controlefinanceiro.data.repository.TransactionRepository
+import br.dev.allan.controlefinanceiro.data.repository.TransactionRepositoryImpl
 import br.dev.allan.controlefinanceiro.domain.model.Transaction
+import br.dev.allan.controlefinanceiro.domain.repository.TransactionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flatMapLatest
@@ -17,12 +18,8 @@ import kotlinx.coroutines.launch
 import java.time.YearMonth
 import java.time.ZoneId
 import javax.inject.Inject
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.stateIn
-import androidx.compose.runtime.snapshotFlow
 import br.dev.allan.controlefinanceiro.presentation.ui.model.CategoryAppearance
 import br.dev.allan.controlefinanceiro.presentation.ui.model.getAppearance
 import kotlinx.coroutines.flow.combine
