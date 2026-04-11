@@ -1,8 +1,9 @@
 # Zeno - Controle Financeiro 
 
-📱 Preview (APP EM DESENVOLVIMENTO, ESSE NÃO É O DESIGN FINAL)<br>
+📱 Preview <br> (APP AINDA EM DESENVOLVIMENTO...)<br>
 
-<img width="280" height="675" alt="Screenshot_20260411_123318" src="https://github.com/user-attachments/assets/15bb1daf-7439-4798-8011-cba29ced854d" /><br>
+<img width="360" height="780" alt="Screenshot_20260411_162545" src="https://github.com/user-attachments/assets/266d30f8-3f5b-40a6-8e7f-c6dbdaf3af93" /><br>
+
 
 🚀 Funcionalidades
 📊 Cadastro e acompanhamento de receitas e despesas
