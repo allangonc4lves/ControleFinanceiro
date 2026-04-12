@@ -2,8 +2,7 @@
 
 📱 Preview <br> (APP AINDA EM DESENVOLVIMENTO...)<br>
 
-<img width="360" height="780" alt="Screenshot_20260411_162545" src="https://github.com/user-attachments/assets/266d30f8-3f5b-40a6-8e7f-c6dbdaf3af93" /><br>
-
+<img width="360" height="780" alt="Screenshot_20260412_173307" src="https://github.com/user-attachments/assets/b26ab684-4cbc-4236-b4ec-eed32546cd39" /><br>
 
 🚀 Funcionalidades
 📊 Cadastro e acompanhamento de receitas e despesas
