@@ -34,7 +34,7 @@ fun ZenoBottomAppBar(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    val items = listOf(
+    val buttonsAppBarList = listOf(
         ButtonAppBarNavigation("Home", Icons.Rounded.Home, HomeRoute),
         ButtonAppBarNavigation("Transações", Icons.Rounded.CompareArrows, TransactionsRoute),
         ButtonAppBarNavigation("Relatórios", Icons.Rounded.Analytics, ReportsRoute),
@@ -54,7 +54,7 @@ fun ZenoBottomAppBar(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            items.forEachIndexed { index, item ->
+            buttonsAppBarList.forEachIndexed { index, item ->
                 if (index == 2) Spacer(modifier = Modifier.width(48.dp))
 
                 val isSelected = currentDestination?.hasRoute(item.route::class) ?: false

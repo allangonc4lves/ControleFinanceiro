@@ -62,7 +62,11 @@ fun HomeScreen(
                     selectedMonth
                 )
             }
-            Spacer(modifier = Modifier.size(8.dp))
+        }
+
+        item {
+            Spacer(modifier = Modifier.size(16.dp))
+            CustomTextTitle("Despesas por categoria", Color.Black, 8)
         }
 
         item {
@@ -71,7 +75,7 @@ fun HomeScreen(
 
         item {
             Spacer(modifier = Modifier.size(16.dp))
-            CustomTextTitle("Últimas atividades", Color.Black, 16)
+            CustomTextTitle("Últimas atividades", Color.Black, 8)
         }
 
         items(transactions) { item ->

@@ -2,6 +2,7 @@ package br.dev.allan.controlefinanceiro.presentation.ui.features.transaction_add
 
 
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -16,6 +17,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import br.dev.allan.controlefinanceiro.domain.model.TransactionCategory
 import br.dev.allan.controlefinanceiro.domain.model.TransactionDirection
 import br.dev.allan.controlefinanceiro.presentation.ui.model.getAppearance
@@ -43,6 +45,7 @@ fun DropdownAddTransaction(
     ) {
         OutlinedTextField(
             value = selectedAppearance?.displayName ?: "Selecione a Categoria",
+            shape = RoundedCornerShape(32.dp),
             onValueChange = {},
             readOnly = true,
             label = { Text("Categoria") },

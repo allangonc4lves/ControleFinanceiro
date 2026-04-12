@@ -11,7 +11,6 @@ object TransactionsRoute
 @Serializable
 object ReportsRoute
 
-// Rota de detalhes (Exemplo de rota com parâmetro)
 @Serializable
 data class TransactionDetailRoute(
     val id: Long
