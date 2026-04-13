@@ -33,10 +33,8 @@ fun ExpensesByCategoryCard(expensesByCategory: Map<CategoryAppearance, Double>) 
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            // Lado Esquerdo: O Gráfico
             AnimatedDonutChart(data = expensesByCategory)
 
-            // Lado Direito: Legenda
             Column(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -48,7 +46,6 @@ fun ExpensesByCategoryCard(expensesByCategory: Map<CategoryAppearance, Double>) 
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            // Círculo colorido da legenda
                             Box(
                                 modifier = Modifier
                                     .size(10.dp)
