@@ -7,7 +7,7 @@ data class ValidationResult(
     val errorMessage: String? = null
 )
 
-class ValidateTitle {
+class ValidateText {
     fun execute(title: String): ValidationResult {
         if (title.isBlank()) {
             return ValidationResult(successful = false, errorMessage = "Campo obrigatório")

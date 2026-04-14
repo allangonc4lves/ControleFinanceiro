@@ -1,4 +1,4 @@
-package br.dev.allan.controlefinanceiro.presentation.ui.features.transaction_add
+package br.dev.allan.controlefinanceiro.presentation.ui.features.add_transaction
 
 import br.dev.allan.controlefinanceiro.domain.model.TransactionCategory
 import br.dev.allan.controlefinanceiro.domain.model.TransactionDirection

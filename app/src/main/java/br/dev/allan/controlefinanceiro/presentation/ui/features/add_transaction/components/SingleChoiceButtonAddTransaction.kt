@@ -1,4 +1,4 @@
-package br.dev.allan.controlefinanceiro.presentation.ui.features.transaction_add.components
+package br.dev.allan.controlefinanceiro.presentation.ui.features.add_transaction.components
 
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults

@@ -13,9 +13,9 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun CustomTextContent(
-    text: String,
-    color: Color,
     modifier: Modifier = Modifier,
+    text: String,
+    color: Color = MaterialTheme.colorScheme.onPrimaryContainer,
     startPadding: Int = 0,
     endPadding: Int = 0,
 ) {
@@ -25,5 +25,5 @@ fun CustomTextContent(
     color = color,
     maxLines = 1,
     overflow = TextOverflow.Ellipsis,
-    style = MaterialTheme.typography.bodySmall, textAlign = TextAlign.Center)
+    style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.Center)
 }

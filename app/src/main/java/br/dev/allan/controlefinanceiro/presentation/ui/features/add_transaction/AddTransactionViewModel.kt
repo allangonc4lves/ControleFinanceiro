@@ -1,10 +1,8 @@
-package br.dev.allan.controlefinanceiro.presentation.ui.features.transaction_add
+package br.dev.allan.controlefinanceiro.presentation.ui.features.add_transaction
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.text.TextRange
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import br.dev.allan.controlefinanceiro.domain.model.Transaction
@@ -14,7 +12,7 @@ import br.dev.allan.controlefinanceiro.domain.model.TransactionType
 import br.dev.allan.controlefinanceiro.domain.repository.TransactionRepository
 import br.dev.allan.controlefinanceiro.domain.usecase.ValidateAmount
 import br.dev.allan.controlefinanceiro.domain.usecase.ValidateCategory
-import br.dev.allan.controlefinanceiro.domain.usecase.ValidateTitle
+import br.dev.allan.controlefinanceiro.domain.usecase.ValidateText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
@@ -27,7 +25,7 @@ import javax.inject.Inject
 @HiltViewModel
 class AddTransactionViewModel @Inject constructor(
     private val repository: TransactionRepository,
-    private val validateTitle: ValidateTitle = ValidateTitle(),
+    private val validateText: ValidateText = ValidateText(),
     private val validateAmount: ValidateAmount = ValidateAmount(),
     private val validateCategory: ValidateCategory = ValidateCategory(),
 ) : ViewModel() {
@@ -87,7 +85,7 @@ class AddTransactionViewModel @Inject constructor(
     fun saveTransaction() {
         uiState = uiState.copy(isLoading = true)
 
-        val titleResult = validateTitle.execute(uiState.title)
+        val titleResult = validateText.execute(uiState.title)
         val amountResult = validateAmount.execute(uiState.amount)
         val categoryResult = validateCategory.execute(uiState.category)
 

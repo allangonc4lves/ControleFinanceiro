@@ -49,7 +49,6 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
     navViewModel: NavigationViewModel = hiltViewModel()
 ) {
-    val transactions by viewModel.transactions.collectAsState()
     val recentsTransactions by viewModel.recentTransactions.collectAsState()
     val totalExpenses by viewModel.totalExpenses.collectAsState()
     val totalIncomes by viewModel.totalIncomes.collectAsState()
@@ -91,10 +90,11 @@ fun HomeScreen(
                 if(recentsTransactions.isNotEmpty()){
                     CustomTextTitle("Últimas atividades", MaterialTheme.colorScheme.onPrimaryContainer, 8)
                     CustomTextContent(
-                        "Ver tudo",
-                        MaterialTheme.colorScheme.onPrimaryContainer,
-                        Modifier.clickable { navViewModel.navigateWithOptions(navController, TransactionsRoute) },
-                        0, 8,
+                        text = "Ver tudo",
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.clickable { navViewModel.navigateWithOptions(navController, TransactionsRoute) },
+                        startPadding = 0,
+                        endPadding = 8,
                     )
                 }
             }
@@ -132,27 +132,27 @@ fun HomeScreen(
                     }
                     Column(modifier = Modifier.padding(start = 4.dp)) {
                         CustomTextTitle(if(item.isInstallment) item.title + "( " + item.installmentCount + "X de R$" + item.amount / item.installmentCount + " )" else item.title,
-                            MaterialTheme.colorScheme.onSurfaceVariant
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         CustomTextContent(
-                            appearance.displayName,
-                            MaterialTheme.colorScheme.onSurfaceVariant,
+                            text = appearance.displayName,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                 }
 
                 Column(horizontalAlignment = Alignment.End) {
                     CustomTextTitle(
-                        if (item.type == TransactionDirection.EXPENSE) "- " + "R$ ${item.amount}" else "+ " + "R$ ${item.amount}",
-                        MaterialTheme.colorScheme.onPrimaryContainer
+                        text = if (item.type == TransactionDirection.EXPENSE) "- " + "R$ ${item.amount}" else "+ " + "R$ ${item.amount}",
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                     CustomTextContent(
-                        SimpleDateFormat(
+                        text = SimpleDateFormat(
                             "dd/MM/yyyy", Locale.getDefault()
                         ).format(
                             Date(item.date)
                         ),
-                        MaterialTheme.colorScheme.onPrimaryContainer,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
                     )
                 }
             }

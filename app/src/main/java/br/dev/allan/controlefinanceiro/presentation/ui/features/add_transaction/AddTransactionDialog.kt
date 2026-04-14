@@ -1,33 +1,17 @@
-package br.dev.allan.controlefinanceiro.presentation.ui.features.transaction_add
+package br.dev.allan.controlefinanceiro.presentation.ui.features.add_transaction
 
-import android.widget.Toast
-import androidx.compose.animation.animateColor
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -41,30 +25,22 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import br.dev.allan.controlefinanceiro.domain.model.TransactionDirection
 import br.dev.allan.controlefinanceiro.domain.model.TransactionType
 import br.dev.allan.controlefinanceiro.presentation.ui.components.CircularLoading
 import br.dev.allan.controlefinanceiro.presentation.ui.components.CustomOutlinedTextField
-import br.dev.allan.controlefinanceiro.presentation.ui.features.transaction_add.components.DropdownAddTransaction
-import br.dev.allan.controlefinanceiro.presentation.ui.features.transaction_add.components.SingleChoiceButtonAddTransaction
-import br.dev.allan.controlefinanceiro.presentation.ui.features.transaction_add.components.SwitchAddTransaction
-import br.dev.allan.controlefinanceiro.presentation.ui.components.CustomTextTitle
-import com.google.android.material.loadingindicator.LoadingIndicator
-import java.text.NumberFormat
+import br.dev.allan.controlefinanceiro.presentation.ui.features.add_transaction.components.DropdownAddTransaction
+import br.dev.allan.controlefinanceiro.presentation.ui.features.add_transaction.components.SingleChoiceButtonAddTransaction
+import br.dev.allan.controlefinanceiro.presentation.ui.features.add_transaction.components.SwitchAddTransaction
+import br.dev.allan.controlefinanceiro.presentation.ui.components.ZenoDialog
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -72,7 +48,9 @@ fun AddTransactionDialog(
     onDismiss: () -> Unit,
     viewModel: AddTransactionViewModel = hiltViewModel()
 ) {
+
     val state = viewModel.uiState
+    var showDatePicker by remember { mutableStateOf(false) }
 
     LaunchedEffect(key1 = true) {
         viewModel.uiEvent.collect { event ->
@@ -84,25 +62,11 @@ fun AddTransactionDialog(
         }
     }
 
-    var showDatePicker by remember { mutableStateOf(false) }
-
-    if (showDatePicker) {
-        val datePickerState = rememberDatePickerState(initialSelectedDateMillis = state.dateMillis)
-        DatePickerDialog(
-            onDismissRequest = { showDatePicker = false },
-            confirmButton = {
-                TextButton(onClick = {
-                    datePickerState.selectedDateMillis?.let { viewModel.onDateChange(it) }
-                    showDatePicker = false
-                }) { Text("OK") }
-            }
-        ) { DatePicker(state = datePickerState) }
-    }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { CustomTextTitle("Cadastro de transação", MaterialTheme.colorScheme.primary) },
-        text = {
+    ZenoDialog(
+        title ="Nova transação",
+        onDismiss = { onDismiss() },
+        onConfirm = { viewModel.saveTransaction() },
+        content = {
             Box(contentAlignment = Alignment.Center) {
                 Column(
                     modifier = Modifier
@@ -197,12 +161,20 @@ fun AddTransactionDialog(
                     CircularLoading()
                 }
             }
-        },
-        confirmButton = {
-            Button(onClick = {
-                viewModel.saveTransaction()
-            }) { Text("Confirmar") }
-        },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancelar") } }
+        }
     )
+
+    if (showDatePicker) {
+        val datePickerState = rememberDatePickerState(initialSelectedDateMillis = state.dateMillis)
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    datePickerState.selectedDateMillis?.let { viewModel.onDateChange(it) }
+                    showDatePicker = false
+                }) { Text("OK") }
+            }
+        ) { DatePicker(state = datePickerState) }
+    }
+
 }
