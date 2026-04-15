@@ -32,10 +32,9 @@ class CreditCardRepositoryImpl @Inject constructor(
         dao.deleteById(id)
     }
 
-    // Mapping helpers
     private fun CreditCardEntity.toDomain(): CreditCard =
-        CreditCard(id = id, bankName = bankName, brand = brand, backgroundColor = backgroundColor, lastDigits = 111)
+        CreditCard(id = id, bankName = bankName, brand = brand, backgroundColor = backgroundColor, lastDigits = lastDigits)
 
     private fun CreditCard.toEntity(): CreditCardEntity =
-        CreditCardEntity(id = id, bankName = bankName, brand = brand, backgroundColor = backgroundColor, lastDigits = 222)
+        CreditCardEntity(id = id, bankName = bankName, brand = brand, backgroundColor = backgroundColor, lastDigits = lastDigits)
 }

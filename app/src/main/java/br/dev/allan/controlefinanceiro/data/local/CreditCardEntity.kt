@@ -8,6 +8,6 @@ data class CreditCardEntity(
     @PrimaryKey val id: String,
     val bankName: String,
     val brand: String,
-    val lastDigits: Int = 1234,
+    val lastDigits: Int,
     val backgroundColor: Long
 )

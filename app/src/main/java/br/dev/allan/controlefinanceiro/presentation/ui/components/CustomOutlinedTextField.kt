@@ -1,7 +1,7 @@
 package br.dev.allan.controlefinanceiro.presentation.ui.components
 
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -18,6 +18,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
@@ -27,8 +28,10 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import br.dev.allan.controlefinanceiro.domain.model.InputModeCustomTextField
 
 @Composable
 fun CustomOutlinedTextField(
@@ -38,6 +41,8 @@ fun CustomOutlinedTextField(
     forceCursorAtEnd: Boolean = false,
     isReadOnly: Boolean = false,
     isError: Boolean = false,
+    inputMode: InputModeCustomTextField = InputModeCustomTextField.TEXT,
+    maxLength: Int = 30,
     errorMessage: String = "",
     visualTransformation: VisualTransformation = VisualTransformation.None,
     keyboardType: KeyboardType = KeyboardType.Text,
@@ -68,7 +73,7 @@ fun CustomOutlinedTextField(
 
     OutlinedTextField(
         shape = RoundedCornerShape(32.dp),
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth().heightIn(min = 56.dp),
         readOnly = isReadOnly,
         textStyle = TextStyle(
             fontSize = 14.sp,
@@ -82,12 +87,20 @@ fun CustomOutlinedTextField(
         value = textFieldValueState,
         visualTransformation = visualTransformation,
         onValueChange = { newValue ->
+            val filteredText =
+                if(inputMode == InputModeCustomTextField.TEXT) newValue.text.take(maxLength)
+                else newValue.text.filter { it.isDigit() }.take(maxLength)
+
             textFieldValueState = if (forceCursorAtEnd) {
-                newValue.copy(selection = TextRange(newValue.text.length))
+                TextFieldValue(
+                    text = filteredText,
+                    selection = TextRange(filteredText.length)
+                )
             } else {
-                newValue
+                newValue.copy(text = filteredText)
             }
-            onValueChange(newValue.text)
+
+            onValueChange(filteredText)
         },
         singleLine = true,
         label = {
@@ -95,9 +108,11 @@ fun CustomOutlinedTextField(
                 text = label,
                 fontWeight = FontWeight.Normal,
                 fontSize = 12.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
         },
-        isError = isError,
+            isError = isError,
         keyboardOptions = KeyboardOptions(
             keyboardType = keyboardType,
             imeAction = imeAction,

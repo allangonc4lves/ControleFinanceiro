@@ -55,6 +55,7 @@ fun CreditCardsScreen(
             CreditCardPreview(
                 bankName = card.bankName,
                 brand = card.brand,
+                lastDigits = card.lastDigits.toString(),
                 backgroundColorLong = card.backgroundColor,
                 modifier = Modifier.fillMaxSize()
             )

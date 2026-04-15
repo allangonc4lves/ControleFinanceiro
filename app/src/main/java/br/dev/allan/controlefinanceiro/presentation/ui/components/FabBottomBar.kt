@@ -51,10 +51,6 @@ fun FabBottomBar(
         if(currentRoute == CreditCardsRoute::class.qualifiedName){
             AddCreditCardDialog(
                 onDismiss = { showDialog = false },
-                onConfirm = { bank, brand, color ->
-                   // viewModel.addCard(bankName = bank, brand = brand, backgroundColor = color)
-                    showDialog = false
-                }
             )
         } else {
             AddTransactionDialog(

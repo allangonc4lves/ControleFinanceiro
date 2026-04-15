@@ -1,5 +1,6 @@
 package br.dev.allan.controlefinanceiro.presentation.ui.screens.creditCardsScreen
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -26,7 +27,6 @@ class CardsViewModel @Inject constructor(
     private val validateLastDigits: ValidateLastDigitsCreditCard = ValidateLastDigitsCreditCard(),
     private val repository: CreditCardRepository
 ) : ViewModel() {
-
     var uiState by mutableStateOf(AddCreditCardUiState())
         private set
 
@@ -35,24 +35,25 @@ class CardsViewModel @Inject constructor(
 
     fun onBankNameChange(newBankName: String) {
         uiState = uiState.copy(bankName = newBankName, bankNameError = null)
-
     }
 
     fun onBrandChange(newBrand: String) {
         uiState = uiState.copy(brand = newBrand, brandError = null)
-
     }
 
     fun onLastDigitsChange(newLastDigits: String) {
-        uiState = uiState.copy(lastDigits = newLastDigits, lastDigitsError = null)
+            uiState = uiState.copy(lastDigits = newLastDigits, lastDigitsError = null)
+            Log.i("teste", uiState.lastDigits)
+    }
 
+    fun onColorSelected(color: Long) {
+        uiState = uiState.copy(backgroundColor = color)
     }
 
     val cards: StateFlow<List<CreditCard>> =
         repository.getCards().stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
-    fun saveCard(bankName: String, brand: String, backgroundColor: Long) {
-
+    fun saveCard() {
         uiState = uiState.copy(isLoading = true)
 
         val bankNameResult = validateText.execute(uiState.bankName)
@@ -70,10 +71,10 @@ class CardsViewModel @Inject constructor(
             return
         } else {
             val card = CreditCard(
-                bankName = bankName,
-                brand = brand,
-                lastDigits = 333,
-                backgroundColor = backgroundColor
+                bankName = uiState.bankName,
+                brand = uiState.brand,
+                lastDigits = uiState.lastDigits.toIntOrNull() ?: 1234,
+                backgroundColor = uiState.backgroundColor
             )
 
             viewModelScope.launch {

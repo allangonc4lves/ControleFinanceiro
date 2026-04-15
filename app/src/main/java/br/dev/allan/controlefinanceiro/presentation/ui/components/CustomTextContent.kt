@@ -13,8 +13,8 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun CustomTextContent(
-    modifier: Modifier = Modifier,
     text: String,
+    modifier: Modifier = Modifier,
     color: Color = MaterialTheme.colorScheme.onPrimaryContainer,
     startPadding: Int = 0,
     endPadding: Int = 0,

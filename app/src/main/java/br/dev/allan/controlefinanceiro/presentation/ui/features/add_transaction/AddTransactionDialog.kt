@@ -71,7 +71,7 @@ fun AddTransactionDialog(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .alpha(if (state.isLoading) 0.5f else 1f) // Esmaece o form no loading
+                        .alpha(if (state.isLoading) 0.5f else 1f)
                         .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                     horizontalAlignment = Alignment.CenterHorizontally

@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.sp
 fun CreditCardPreview(
     bankName: String,
     brand: String,
+    lastDigits: String,
     backgroundColorLong: Long,
     modifier: Modifier = Modifier
 ) {
@@ -151,7 +152,7 @@ fun CreditCardPreview(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "••••  ••••  ••••  1234",
+                    text = "••••  ••••  •••• $lastDigits",
                     color = contentColor,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.SemiBold,
