@@ -15,8 +15,8 @@ interface TransactionDao {
     @Query("SELECT * FROM transactions ORDER BY date DESC")
     fun getAllTransactions(): Flow<List<TransactionEntity>>
 
-    @Query("SELECT * FROM transactions ORDER BY date DESC LIMIT 5")
-    fun getRecentTransactions(): Flow<List<Transaction>>
+    @Query("SELECT * FROM transactions WHERE date >= :dateCutoff ORDER BY date DESC")
+    fun getRecentTransactions(dateCutoff: Long): Flow<List<Transaction>>
 
     @Query("""
         SELECT * FROM transactions 
@@ -26,7 +26,8 @@ interface TransactionDao {
     """)
     fun getTransactionsByMonth(start: Long, end: Long): Flow<List<Transaction>>
 
-    @Query("""
+    @Query(
+        """
     SELECT SUM(
         CASE 
             WHEN isInstallment = 1 AND installmentCount > 0 
@@ -35,7 +36,7 @@ interface TransactionDao {
         END
     ) 
     FROM transactions 
-    WHERE type = 'EXPENSE' 
+    WHERE direction = 'EXPENSE' 
     AND (
         (date BETWEEN :start AND :end) 
 
@@ -49,10 +50,12 @@ interface TransactionDao {
             )
         )
     )
-""")
+"""
+    )
     fun getTotalExpensesByMonth(start: Long, end: Long): Flow<Double?>
 
-    @Query("""
+    @Query(
+        """
     SELECT SUM(
         CASE 
             WHEN isInstallment = 1 AND installmentCount > 0 
@@ -61,12 +64,14 @@ interface TransactionDao {
         END
     ) 
     FROM transactions 
-    WHERE type = 'INCOME' 
+    WHERE direction = 'INCOME' 
     AND ((date BETWEEN :start AND :end) OR (isFixed = 1 AND date <= :end))
-""")
+"""
+    )
     fun getTotalIncomesByMonth(start: Long, end: Long): Flow<Double?>
 
-    @Query("""
+    @Query(
+        """
     SELECT 
         category, 
         SUM(
@@ -77,7 +82,7 @@ interface TransactionDao {
             END
         ) as total 
     FROM transactions 
-    WHERE type = 'EXPENSE' 
+    WHERE direction = 'EXPENSE' 
     AND (
         
         (date BETWEEN :start AND :end) 
@@ -91,7 +96,8 @@ interface TransactionDao {
         )
     )
     GROUP BY category
-""")
+"""
+    )
     fun getExpensesByCategory(start: Long, end: Long): Flow<List<CategorySum>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

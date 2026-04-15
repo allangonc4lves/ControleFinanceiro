@@ -17,13 +17,12 @@ import br.dev.allan.controlefinanceiro.presentation.ui.model.CategoryAppearance
 
 @Composable
 fun AnimatedDonutChart(
-    data: Map<CategoryAppearance, Double>, // Categoria -> Valor
+    data: Map<CategoryAppearance, Double>,
     modifier: Modifier = Modifier
 ) {
     val total = data.values.sum().toFloat()
     val animationProgress = remember { Animatable(0f) }
 
-    // Dispara a animação assim que o componente entra na tela
     LaunchedEffect(Unit) {
         animationProgress.animateTo(
             targetValue = 1f,

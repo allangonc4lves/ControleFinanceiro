@@ -9,7 +9,7 @@ data class Transaction(
     val isFixed: Boolean = false,
     val isInstallment: Boolean = false,
     val installmentCount: Int = 0,
-    val type: TransactionDirection,
+    val direction: TransactionDirection,
 )
 
 

@@ -1,6 +1,5 @@
 package br.dev.allan.controlefinanceiro.presentation.ui.screens.homeScreen
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -13,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -30,12 +28,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import br.dev.allan.controlefinanceiro.domain.model.TransactionDirection
-import br.dev.allan.controlefinanceiro.domain.model.TransactionType
 import br.dev.allan.controlefinanceiro.presentation.ui.screens.homeScreen.components.ExpensesByCategoryCard
 import br.dev.allan.controlefinanceiro.presentation.ui.main.components.ZenoDrawBoxTop
 import br.dev.allan.controlefinanceiro.presentation.ui.components.CustomTextContent
 import br.dev.allan.controlefinanceiro.presentation.ui.components.CustomTextTitle
-import br.dev.allan.controlefinanceiro.presentation.ui.model.CategoryAppearance
 import br.dev.allan.controlefinanceiro.presentation.ui.screens.homeScreen.components.TotalExpAndIncByMonthCard
 import br.dev.allan.controlefinanceiro.presentation.ui.screens.navigation.TransactionsRoute
 import br.dev.allan.controlefinanceiro.presentation.viewmodel.HomeViewModel
@@ -50,13 +46,13 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
     navViewModel: NavigationViewModel = hiltViewModel()
 ) {
-    val recentsTransactions by viewModel.recentTransactions.collectAsState()
-    val totalExpenses by viewModel.totalExpenses.collectAsState()
-    val totalIncomes by viewModel.totalIncomes.collectAsState()
-    val totalBalance by viewModel.totalBalance.collectAsState()
+    val recentsTransactions by viewModel.recentTransactionsUI.collectAsState()
+    val formattedIncomes by viewModel.formattedIncomes.collectAsState()
+    val formattedExpenses by viewModel.formattedExpenses.collectAsState()
+    val formattedBalance by viewModel.formattedBalance.collectAsState()
     val selectedMonth = viewModel.selectedMonth
 
-    val expensesMap by viewModel.chartData.collectAsState()
+    val chartData by viewModel.chartData.collectAsState()
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -65,20 +61,22 @@ fun HomeScreen(
         item {
             ZenoDrawBoxTop {
                 TotalExpAndIncByMonthCard(
-                    totalBalance,
-                    totalIncomes,
-                    totalExpenses,
+                    formattedIncomes,
+                    formattedExpenses,
+                    formattedBalance,
                     selectedMonth
                 )
             }
         }
 
         item {
-            if(totalExpenses > 0 ){
-                Spacer(modifier = Modifier.size(16.dp))
-                CustomTextTitle("Despesas por categoria", MaterialTheme.colorScheme.onPrimaryContainer, 8)
-                ExpensesByCategoryCard(expensesMap)
-            }
+            Spacer(modifier = Modifier.size(16.dp))
+            CustomTextTitle(
+                text = "Despesas por categoria",
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                startPadding = 8
+            )
+            ExpensesByCategoryCard(chartData)
         }
 
         item {
@@ -88,72 +86,97 @@ fun HomeScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                if(recentsTransactions.isNotEmpty()){
-                    CustomTextTitle("Últimas atividades", MaterialTheme.colorScheme.onPrimaryContainer, 8)
-                    CustomTextContent(
-                        text = "Ver tudo",
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.clickable { navViewModel.navigateWithOptions(navController, TransactionsRoute) },
-                        startPadding = 0,
-                        endPadding = 8,
-                    )
-                }
+                CustomTextTitle(
+                    text = "Atividades recentes",
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    startPadding = 8
+                )
+                CustomTextContent(
+                    text = "Ver tudo",
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.clickable {
+                        navViewModel.navigateWithOptions(
+                            navController,
+                            TransactionsRoute
+                        )
+                    },
+                    startPadding = 0,
+                    endPadding = 8,
+                )
+
             }
         }
+        if (recentsTransactions.isNotEmpty()) {
+            items(recentsTransactions) { item ->
 
-        items(recentsTransactions) { item ->
+                val appearance = item.category.getAppearance()
 
-            val appearance = item.category.getAppearance()
-
-            Row(
-                modifier = Modifier
-                    .padding(8.dp)
-                    .fillMaxWidth()
-                    .clickable {},
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .background(
-                                color = if ( item.type.name == TransactionDirection.EXPENSE.name ) Color(0xFFAB1A1A)
-                                else Color(0xFF32A642),
-                                shape = CircleShape
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = appearance.icon,
-                            contentDescription = appearance.displayName,
-                            tint = MaterialTheme.colorScheme.onSecondary,
-                            modifier = Modifier.size(20.dp)
-                        )
+                Row(
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .fillMaxWidth()
+                        .clickable {},
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .background(
+                                    color = if (item.direction.name == TransactionDirection.EXPENSE.name) Color(
+                                        0xFFAB1A1A
+                                    )
+                                    else Color(0xFF32A642),
+                                    shape = CircleShape
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = appearance.icon,
+                                contentDescription = appearance.displayName,
+                                tint = MaterialTheme.colorScheme.onSecondary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                        Column(modifier = Modifier.padding(start = 4.dp)) {
+                            CustomTextTitle(
+                                item.title,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            CustomTextContent(
+                                text = appearance.displayName,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
                     }
-                    Column(modifier = Modifier.padding(start = 4.dp)) {
-                        CustomTextTitle(if(item.isInstallment) item.title + "( " + item.installmentCount + "X de R$" + item.amount / item.installmentCount + " )" else item.title,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+
+                    Column(horizontalAlignment = Alignment.End) {
+                        CustomTextTitle(
+                            text = item.formattedAmount,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                         CustomTextContent(
-                            text = appearance.displayName,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            text = SimpleDateFormat(
+                                "dd/MM/yyyy", Locale.getDefault()
+                            ).format(
+                                Date(item.formattedDate)
+                            ),
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
                         )
                     }
                 }
-
-                Column(horizontalAlignment = Alignment.End) {
-                    CustomTextTitle(
-                        text = if (item.type == TransactionDirection.EXPENSE) "- " + "R$ ${item.amount}" else "+ " + "R$ ${item.amount}",
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
+            }
+        } else {
+            item {
+                Row(
+                    modifier = Modifier.padding(12.dp).fillMaxSize(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
                     CustomTextContent(
-                        text = SimpleDateFormat(
-                            "dd/MM/yyyy", Locale.getDefault()
-                        ).format(
-                            Date(item.date)
-                        ),
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        text = "Nenhuma transação registrada nos últimos 10 dias",
+                        modifier = Modifier.fillMaxWidth(),
                     )
                 }
             }

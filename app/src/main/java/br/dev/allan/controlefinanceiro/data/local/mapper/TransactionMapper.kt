@@ -13,7 +13,7 @@ fun TransactionEntity.toDomain(): Transaction {
         isFixed = isFixed,
         isInstallment = isInstallment,
         installmentCount = installmentCount,
-        type = type,
+        direction = direction,
     )
 }
 
@@ -27,6 +27,6 @@ fun Transaction.toEntity(): TransactionEntity {
         isFixed = isFixed,
         isInstallment = isInstallment,
         installmentCount = installmentCount,
-        type = type,
+        direction = direction,
     )
 }

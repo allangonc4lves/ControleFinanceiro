@@ -3,6 +3,7 @@ package br.dev.allan.controlefinanceiro.presentation.ui.features.add_transaction
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -29,6 +30,7 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import br.dev.allan.controlefinanceiro.domain.model.InputModeCustomTextField
 import br.dev.allan.controlefinanceiro.domain.model.TransactionDirection
 import br.dev.allan.controlefinanceiro.domain.model.TransactionType
 import br.dev.allan.controlefinanceiro.presentation.ui.components.Loading
@@ -75,25 +77,31 @@ fun AddTransactionDialog(
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    CustomOutlinedTextField(
-                        value = state.title,
-                        label = "Título*",
-                        capitalization = KeyboardCapitalization.Sentences,
-                        isError = state.titleError != null,
-                        errorMessage = state.titleError ?: "",
-                        onValueChange = { viewModel.onTitleChange(it) }
-                    )
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        CustomOutlinedTextField(
+                            modifier = Modifier.weight(0.5f),
+                            value = state.title,
+                            label = "Título*",
+                            capitalization = KeyboardCapitalization.Sentences,
+                            isError = state.titleError != null,
+                            errorMessage = state.titleError ?: "",
+                            onValueChange = { viewModel.onTitleChange(it) }
+                        )
 
-                    CustomOutlinedTextField(
-                        value = state.amount,
-                        label = "Valor*",
-                        forceCursorAtEnd = true,
-                        keyboardType = KeyboardType.NumberPassword,
-                        capitalization = KeyboardCapitalization.None,
-                        isError = state.amountError != null,
-                        errorMessage = state.amountError ?: "",
-                        onValueChange = { viewModel.onAmountChange(it) }
-                    )
+                        CustomOutlinedTextField(
+                            modifier = Modifier.weight(0.5f),
+                            value = state.amount,
+                            label = "Valor*",
+                            forceCursorAtEnd = true,
+                            inputMode = InputModeCustomTextField.DIGITS,
+                            maxLength = 10,
+                            keyboardType = KeyboardType.NumberPassword,
+                            capitalization = KeyboardCapitalization.None,
+                            isError = state.amountError != null,
+                            errorMessage = state.amountError ?: "",
+                            onValueChange = { viewModel.onAmountChange(it) }
+                        )
+                    }
 
                     CustomOutlinedTextField(
                         value = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(

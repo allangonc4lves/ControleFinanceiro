@@ -34,8 +34,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ZenoTopBar() {
-    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+fun ZenoTopBar(onProfileClick: () -> Unit) {
     val coroutineScope = rememberCoroutineScope()
 
     TopAppBar(
@@ -55,7 +54,7 @@ fun ZenoTopBar() {
                         modifier = Modifier
                             .size(36.dp)
                             .clip(CircleShape)
-                            .clickable { coroutineScope.launch { drawerState.open() } }
+                            .clickable { coroutineScope.launch { onProfileClick() } }
                     )
                     Image(
                         painter = painterResource(R.drawable.user_premium),
@@ -69,11 +68,11 @@ fun ZenoTopBar() {
                 Text(
                     text = "Olá, Allan",
                     color = Color.White,
-                    style = MaterialTheme.typography.titleMedium, // Medium costuma ser melhor para nomes
+                    style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.weight(1f)
                 )
 
-                IconButton(onClick = { /* Lógica de busca */ }) {
+                IconButton(onClick = {  }) {
                     Icon(
                         imageVector = Icons.Default.Search,
                         contentDescription = "Search",

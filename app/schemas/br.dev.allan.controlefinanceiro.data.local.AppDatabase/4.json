@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 4,
-    "identityHash": "8813322685ae21064960694579adb84c",
+    "identityHash": "664eb9d51bbda3e6ee0e455fe45d2911",
     "entities": [
       {
         "tableName": "transactions",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `title` TEXT NOT NULL, `amount` REAL NOT NULL, `date` INTEGER NOT NULL, `category` TEXT NOT NULL, `isFixed` INTEGER NOT NULL, `isInstallment` INTEGER NOT NULL, `installmentCount` INTEGER NOT NULL, `type` TEXT NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `title` TEXT NOT NULL, `amount` REAL NOT NULL, `date` INTEGER NOT NULL, `category` TEXT NOT NULL, `isFixed` INTEGER NOT NULL, `isInstallment` INTEGER NOT NULL, `installmentCount` INTEGER NOT NULL, `direction` TEXT NOT NULL)",
         "fields": [
           {
             "fieldPath": "id",
@@ -57,8 +57,8 @@
             "notNull": true
           },
           {
-            "fieldPath": "type",
-            "columnName": "type",
+            "fieldPath": "direction",
+            "columnName": "direction",
             "affinity": "TEXT",
             "notNull": true
           }
@@ -115,7 +115,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '8813322685ae21064960694579adb84c')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '664eb9d51bbda3e6ee0e455fe45d2911')"
     ]
   }
 }

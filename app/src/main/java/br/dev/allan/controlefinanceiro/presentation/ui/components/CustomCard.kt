@@ -14,9 +14,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun CustomCard(content: @Composable () -> Unit) {
+fun CustomCard(
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit
+) {
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(start = 8.dp, end = 8.dp),
         colors = CardDefaults.cardColors(

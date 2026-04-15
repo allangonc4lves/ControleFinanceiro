@@ -12,10 +12,12 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun CustomTextTitle(
     text: String,
-    color: Color,
-    startPadding: Int = 0
+    modifier: Modifier = Modifier,
+    color: Color = MaterialTheme.colorScheme.onPrimaryContainer,
+    startPadding: Int = 0,
+    endPadding: Int = 0,
 ) {
-    Text(modifier = Modifier.padding(startPadding.dp),
+    Text(modifier = Modifier.padding(startPadding.dp, end = endPadding.dp),
     text = text,
     color = color,
     maxLines = 1,

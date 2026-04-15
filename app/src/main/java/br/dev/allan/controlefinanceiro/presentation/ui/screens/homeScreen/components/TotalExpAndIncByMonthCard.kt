@@ -23,7 +23,6 @@ import androidx.compose.material.icons.outlined.ArrowUpward
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,27 +35,21 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import br.dev.allan.controlefinanceiro.presentation.ui.components.CustomCard
 import br.dev.allan.controlefinanceiro.presentation.viewmodel.HomeViewModel
 import kotlinx.coroutines.launch
-import java.text.NumberFormat
 import java.time.YearMonth
-import java.util.Locale
 
 @Composable
 fun TotalExpAndIncByMonthCard(
-    totalBalance: Double,
-    totalIncomes: Double,
-    totalExpenses: Double,
+    formattedIncomes: String,
+    formattedExpenses: String,
+    formattedBalance: String,
     selectedMonth: YearMonth,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val isVisible by viewModel.isBalanceVisible.collectAsState()
 
+    val totalBalance by viewModel.totalBalance.collectAsState()
+
     val scope = rememberCoroutineScope()
-
-    val currencyFormatter = remember { NumberFormat.getCurrencyInstance(Locale("pt", "BR")) }
-
-    fun formatValue(value: Double): String {
-        return if (isVisible) currencyFormatter.format(value) else "R$ •••••"
-    }
 
     CustomCard {
         Column(
@@ -78,12 +71,7 @@ fun TotalExpAndIncByMonthCard(
             ) {
                 Text("Saldo Total do Mês", style = MaterialTheme.typography.labelMedium)
                 Text(
-                    text = if (isVisible) "R$ ${
-                        String.format(
-                            "%.2f",
-                            totalBalance
-                        )
-                    }" else "R$ •••••",
+                    text = if (isVisible) formattedBalance else "R$ •••••",
                     style = MaterialTheme.typography.bodyLarge.copy(
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
@@ -113,15 +101,14 @@ fun TotalExpAndIncByMonthCard(
             ) {
                 SummaryItem(
                     label = "Receitas",
-                    value = formatValue(totalIncomes),
+                    value = if (isVisible) formattedIncomes else "R$ •••••",
                     icon = Icons.Outlined.ArrowUpward,
                     color = Color(0xFF32A642)
                 )
 
-                // Item de Despesa
                 SummaryItem(
                     label = "Despesas",
-                    value = formatValue(totalExpenses),
+                    value = if (isVisible) formattedExpenses else "R$ •••••",
                     icon = Icons.Outlined.ArrowDownward,
                     color = Color(0xFFAB1A1A)
                 )

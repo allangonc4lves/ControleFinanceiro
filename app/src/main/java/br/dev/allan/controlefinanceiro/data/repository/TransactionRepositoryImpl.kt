@@ -25,8 +25,12 @@ class TransactionRepositoryImpl @Inject constructor(
     override fun getTransactions(): Flow<List<Transaction>> =
         dao.getAllTransactions().map { list -> list.map { it.toDomain() } }
 
-    override fun getRecentTransactions(): Flow<List<Transaction>> =
-        dao.getRecentTransactions()
+    override fun getRecentTransactions(): Flow<List<Transaction>> {
+        val tenDaysInMs = 10 * 24 * 60 * 60 * 1000L
+        val dateCutoff = System.currentTimeMillis() - tenDaysInMs
+
+        return dao.getRecentTransactions(dateCutoff)
+    }
 
     override suspend fun insertTransaction(transaction: Transaction) =
         dao.insertTransaction(transaction.toEntity())

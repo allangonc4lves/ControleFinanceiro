@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import br.dev.allan.controlefinanceiro.data.settings.SettingsManager
 import br.dev.allan.controlefinanceiro.domain.model.Transaction
 import br.dev.allan.controlefinanceiro.domain.model.TransactionCategory
 import br.dev.allan.controlefinanceiro.domain.model.TransactionDirection
@@ -15,17 +16,20 @@ import br.dev.allan.controlefinanceiro.domain.usecase.ValidateCategory
 import br.dev.allan.controlefinanceiro.domain.usecase.ValidateText
 import br.dev.allan.controlefinanceiro.presentation.ui.features.add_transaction.AddTransactionUiState
 import br.dev.allan.controlefinanceiro.presentation.ui.features.add_transaction.SaveTransactionUiEvent
+import br.dev.allan.controlefinanceiro.util.CurrencyManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.text.NumberFormat
-import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
 class AddTransactionViewModel @Inject constructor(
+    private val settingsManager: SettingsManager,
+    private val currencyManager: CurrencyManager,
     private val repository: TransactionRepository,
     private val validateText: ValidateText = ValidateText(),
     private val validateAmount: ValidateAmount = ValidateAmount(),
@@ -43,24 +47,24 @@ class AddTransactionViewModel @Inject constructor(
 
     }
 
+    val currentCurrencyCode = settingsManager.currencyCode
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "BRL")
+
     fun onAmountChange(newAmount: String) {
         val digitsOnly = newAmount.filter { it.isDigit() }
 
-        if (digitsOnly.isEmpty()) {
-            uiState = uiState.copy(amount = "", amountError = null)
-            return
-        }
+        val code = currentCurrencyCode.value
 
-        if (digitsOnly.length <= 9) {
-            val formatted = formatToCurrency(digitsOnly)
-            uiState = uiState.copy(amount = formatted, amountError = null)
-        }
+        val doubleValue = digitsOnly.toDoubleOrNull()?.div(100) ?: 0.0
+        val formatted = currencyManager.formatByCurrencyCode(doubleValue, code)
+
+        uiState = uiState.copy(amount = formatted)
     }
 
-    private fun formatToCurrency(digits: String): String {
-        val doubleValue = digits.toLong().toDouble() / 100
-        val formatter = NumberFormat.getCurrencyInstance(Locale("pt", "BR"))
-        return formatter.format(doubleValue)
+    fun updateCurrency(newCode: String) {
+        viewModelScope.launch {
+            settingsManager.setCurrencyCode(newCode)
+        }
     }
 
     fun onCategoryChange(category: TransactionCategory) {
@@ -116,7 +120,7 @@ class AddTransactionViewModel @Inject constructor(
                 isFixed = uiState.transactionType == TransactionType.FIXED,
                 isInstallment = uiState.transactionType == TransactionType.INSTALLMENT,
                 installmentCount = if (uiState.transactionType == TransactionType.INSTALLMENT) uiState.installmentCount else 0,
-                type = uiState.direction
+                direction = uiState.direction
             )
             viewModelScope.launch {
                 repository.insertTransaction(transaction)
