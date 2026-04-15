@@ -23,7 +23,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class CardsViewModel @Inject constructor(
+class AddCreditCardsViewModel @Inject constructor(
     private val validateText: ValidateText = ValidateText(),
     private val validateLastDigits: ValidateLastDigitsCreditCard = ValidateLastDigitsCreditCard(),
     private val repository: CreditCardRepository

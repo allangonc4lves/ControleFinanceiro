@@ -26,13 +26,12 @@ import br.dev.allan.controlefinanceiro.presentation.ui.components.CustomOutlined
 import br.dev.allan.controlefinanceiro.presentation.ui.components.Loading
 import br.dev.allan.controlefinanceiro.presentation.ui.components.ZenoDialog
 import br.dev.allan.controlefinanceiro.presentation.ui.features.add_credit_card.SaveCreditCardUiEvent
-import br.dev.allan.controlefinanceiro.presentation.ui.features.add_transaction.SaveTransactionUiEvent
-import br.dev.allan.controlefinanceiro.presentation.viewmodel.CardsViewModel
+import br.dev.allan.controlefinanceiro.presentation.viewmodel.AddCreditCardsViewModel
 
 @Composable
 fun AddCreditCardDialog(
     onDismiss: () -> Unit,
-    viewModel: CardsViewModel = hiltViewModel(),
+    viewModel: AddCreditCardsViewModel = hiltViewModel(),
 ) {
     val state = viewModel.uiState
 
