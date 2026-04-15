@@ -1,4 +1,4 @@
-package br.dev.allan.controlefinanceiro.presentation.ui.features.add_transaction
+package br.dev.allan.controlefinanceiro.presentation.ui.features.add_transaction.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -33,10 +33,9 @@ import br.dev.allan.controlefinanceiro.domain.model.TransactionDirection
 import br.dev.allan.controlefinanceiro.domain.model.TransactionType
 import br.dev.allan.controlefinanceiro.presentation.ui.components.Loading
 import br.dev.allan.controlefinanceiro.presentation.ui.components.CustomOutlinedTextField
-import br.dev.allan.controlefinanceiro.presentation.ui.features.add_transaction.components.DropdownAddTransaction
-import br.dev.allan.controlefinanceiro.presentation.ui.features.add_transaction.components.SingleChoiceButtonAddTransaction
-import br.dev.allan.controlefinanceiro.presentation.ui.features.add_transaction.components.SwitchAddTransaction
 import br.dev.allan.controlefinanceiro.presentation.ui.components.ZenoDialog
+import br.dev.allan.controlefinanceiro.presentation.viewmodel.AddTransactionViewModel
+import br.dev.allan.controlefinanceiro.presentation.ui.features.add_transaction.SaveTransactionUiEvent
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale

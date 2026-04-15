@@ -34,7 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import br.dev.allan.controlefinanceiro.presentation.ui.components.CustomCard
-import br.dev.allan.controlefinanceiro.presentation.ui.screens.homeScreen.HomeViewModel
+import br.dev.allan.controlefinanceiro.presentation.viewmodel.HomeViewModel
 import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.time.YearMonth

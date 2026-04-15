@@ -38,6 +38,7 @@ import br.dev.allan.controlefinanceiro.presentation.ui.components.CustomTextTitl
 import br.dev.allan.controlefinanceiro.presentation.ui.model.CategoryAppearance
 import br.dev.allan.controlefinanceiro.presentation.ui.screens.homeScreen.components.TotalExpAndIncByMonthCard
 import br.dev.allan.controlefinanceiro.presentation.ui.screens.navigation.TransactionsRoute
+import br.dev.allan.controlefinanceiro.presentation.viewmodel.HomeViewModel
 import br.dev.allan.controlefinanceiro.presentation.viewmodel.NavigationViewModel
 import java.text.SimpleDateFormat
 import java.util.Date

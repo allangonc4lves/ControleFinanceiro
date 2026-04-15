@@ -17,8 +17,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import br.dev.allan.controlefinanceiro.presentation.ui.features.add_transaction.AddTransactionDialog
-import br.dev.allan.controlefinanceiro.presentation.ui.screens.creditCardsScreen.components.AddCreditCardDialog
+import br.dev.allan.controlefinanceiro.presentation.ui.features.add_transaction.components.AddTransactionDialog
+import br.dev.allan.controlefinanceiro.presentation.ui.features.add_credit_card.components.AddCreditCardDialog
 import br.dev.allan.controlefinanceiro.presentation.ui.screens.navigation.CreditCardsRoute
 
 @Composable

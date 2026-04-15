@@ -1,4 +1,4 @@
-package br.dev.allan.controlefinanceiro.presentation.ui.screens.creditCardsScreen.components
+package br.dev.allan.controlefinanceiro.presentation.ui.features.add_credit_card.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import kotlin.math.abs
 
 @Composable
 fun ColorCarousel(
@@ -55,7 +56,7 @@ fun ColorCarousel(
             val color = palette[page % palette.size]
 
             val pageOffset = (page - pagerState.currentPage) + pagerState.currentPageOffsetFraction
-            val scale = (1f - 0.35f * kotlin.math.abs(pageOffset)).coerceIn(0.7f, 1f)
+            val scale = (1f - 0.35f * abs(pageOffset)).coerceIn(0.7f, 1f)
 
             Box(
                 modifier = Modifier
