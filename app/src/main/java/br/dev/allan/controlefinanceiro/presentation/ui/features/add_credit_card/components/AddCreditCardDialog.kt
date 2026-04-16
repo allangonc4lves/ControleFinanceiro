@@ -20,6 +20,7 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import br.dev.allan.controlefinanceiro.domain.model.CreditCardPreviewType
 import br.dev.allan.controlefinanceiro.domain.model.InputModeCustomTextField
 import br.dev.allan.controlefinanceiro.presentation.ui.components.CreditCardPreview
 import br.dev.allan.controlefinanceiro.presentation.ui.components.CustomOutlinedTextField
@@ -94,7 +95,7 @@ fun AddCreditCardDialog(
 
                     Spacer(Modifier.height(4.dp))
                     Text("Selecione uma cor:")
-                    ColorCarousel(
+                    ColorSelector(
                         palette = state.palette,
                         initialSelectedColor = state.backgroundColor,
                         onColorSelected = { viewModel.onColorSelected(it) }
@@ -105,9 +106,7 @@ fun AddCreditCardDialog(
                         brand = state.brand,
                         lastDigits = state.lastDigits,
                         backgroundColorLong = state.backgroundColor,
-                        modifier = Modifier
-                            .width(250.dp)
-                            .height(160.dp)
+                        previewType = CreditCardPreviewType.SMALL
                     )
                 }
 

@@ -16,4 +16,5 @@ data class TransactionEntity(
     val isInstallment: Boolean = false,
     val installmentCount: Int = 0,
     val direction: TransactionDirection,
+    val creditCardId: String? = null
 )

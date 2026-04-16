@@ -24,7 +24,7 @@ import kotlinx.coroutines.launch
 import kotlin.math.abs
 
 @Composable
-fun ColorCarousel(
+fun ColorSelector(
     palette: List<Long>,
     initialSelectedColor: Long,
     onColorSelected: (Long) -> Unit

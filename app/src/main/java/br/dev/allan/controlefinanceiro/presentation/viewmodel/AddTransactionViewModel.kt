@@ -1,5 +1,6 @@
 package br.dev.allan.controlefinanceiro.presentation.viewmodel
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -9,6 +10,7 @@ import br.dev.allan.controlefinanceiro.domain.model.Transaction
 import br.dev.allan.controlefinanceiro.domain.model.TransactionCategory
 import br.dev.allan.controlefinanceiro.domain.model.TransactionDirection
 import br.dev.allan.controlefinanceiro.domain.model.TransactionType
+import br.dev.allan.controlefinanceiro.domain.repository.CreditCardRepository
 import br.dev.allan.controlefinanceiro.domain.repository.TransactionRepository
 import br.dev.allan.controlefinanceiro.domain.usecase.ValidateAmount
 import br.dev.allan.controlefinanceiro.domain.usecase.ValidateCategory
@@ -28,7 +30,8 @@ import kotlin.text.replace
 
 @HiltViewModel
 class AddTransactionViewModel @Inject constructor(
-    private val repository: TransactionRepository,
+    private val transactionRepository: TransactionRepository,
+    private val creditCardRepository: CreditCardRepository,
     private val validateText: ValidateText = ValidateText(),
     private val validateAmount: ValidateAmount = ValidateAmount(),
     private val validateCategory: ValidateCategory = ValidateCategory(),
@@ -39,6 +42,14 @@ class AddTransactionViewModel @Inject constructor(
 
     private val _uiEvent = Channel<SaveTransactionUiEvent>()
     val uiEvent = _uiEvent.receiveAsFlow()
+
+    init {
+        viewModelScope.launch {
+            creditCardRepository.getCards().collect { cards ->
+                uiState = uiState.copy(cards = cards)
+            }
+        }
+    }
 
     fun onTitleChange(newTitle: String) {
         uiState = uiState.copy(title = newTitle, titleError = null)
@@ -66,7 +77,17 @@ class AddTransactionViewModel @Inject constructor(
     }
 
     fun onCategoryChange(category: TransactionCategory) {
-        uiState = uiState.copy(category = category, categoryError = null)
+        uiState = uiState.copy(
+            category = category,
+            categoryError = null,
+            selectedCardId = if (category == TransactionCategory.CREDIT_CARD_PAYMENT) uiState.selectedCardId else null
+        )
+        Log.i("onCategoryChange", uiState.selectedCardId.toString())
+    }
+
+    fun onSelectCard(cardId: String?) {
+        uiState = uiState.copy(selectedCardId = cardId)
+        Log.i("onSelectCard", cardId.toString())
     }
 
     fun onInstallmentCountChange(count: Int) {
@@ -99,6 +120,14 @@ class AddTransactionViewModel @Inject constructor(
             .replace(",", ".")
             .toDoubleOrNull() ?: 0.0
 
+        if (uiState.category == TransactionCategory.CREDIT_CARD_PAYMENT && uiState.selectedCardId.isNullOrBlank()) {
+            uiState = uiState.copy(
+                isLoading = false,
+                categoryError = "Selecione um cartão para continuar"
+            )
+            return
+        }
+
         val hasError = listOf(titleResult, amountResult, categoryResult).any { !it.successful }
 
         if (hasError) {
@@ -118,10 +147,12 @@ class AddTransactionViewModel @Inject constructor(
                 isFixed = uiState.transactionType == TransactionType.FIXED,
                 isInstallment = uiState.transactionType == TransactionType.INSTALLMENT,
                 installmentCount = if (uiState.transactionType == TransactionType.INSTALLMENT) uiState.installmentCount else 0,
-                direction = uiState.direction
+                direction = uiState.direction,
+                creditCardId = uiState.selectedCardId
             )
+            Log.i("SaveCard", uiState.selectedCardId.toString())
             viewModelScope.launch {
-                repository.insertTransaction(transaction)
+                transactionRepository.insertTransaction(transaction)
                 delay(2000L)
                 _uiEvent.send(SaveTransactionUiEvent.SaveSuccess)
                 uiState = uiState.copy(isLoading = false)

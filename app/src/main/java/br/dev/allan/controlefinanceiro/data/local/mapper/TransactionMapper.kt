@@ -14,6 +14,7 @@ fun TransactionEntity.toDomain(): Transaction {
         isInstallment = isInstallment,
         installmentCount = installmentCount,
         direction = direction,
+        creditCardId = creditCardId
     )
 }
 
@@ -28,5 +29,6 @@ fun Transaction.toEntity(): TransactionEntity {
         isInstallment = isInstallment,
         installmentCount = installmentCount,
         direction = direction,
+        creditCardId = creditCardId
     )
 }

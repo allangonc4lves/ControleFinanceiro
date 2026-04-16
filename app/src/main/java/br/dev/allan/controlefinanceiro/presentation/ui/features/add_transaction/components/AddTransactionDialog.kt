@@ -31,6 +31,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import br.dev.allan.controlefinanceiro.domain.model.InputModeCustomTextField
+import br.dev.allan.controlefinanceiro.domain.model.TransactionCategory
 import br.dev.allan.controlefinanceiro.domain.model.TransactionDirection
 import br.dev.allan.controlefinanceiro.domain.model.TransactionType
 import br.dev.allan.controlefinanceiro.presentation.ui.components.Loading
@@ -161,6 +162,14 @@ fun AddTransactionDialog(
                         isError = state.categoryError != null,
                         errorMessage = state.categoryError ?: ""
                     )
+
+                    if (viewModel.uiState.category == TransactionCategory.CREDIT_CARD_PAYMENT) {
+                        CardSelector(
+                            cards = viewModel.uiState.cards,
+                            selectedCardId = viewModel.uiState.selectedCardId,
+                            onCardSelected = { viewModel.onSelectCard(it) }
+                        )
+                    }
                 }
 
                 if (state.isLoading) {

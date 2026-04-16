@@ -112,6 +112,24 @@ interface TransactionDao {
     )
     fun getExpensesByCategory(start: Long, end: Long): Flow<List<CategorySum>>
 
+    @Query("SELECT * FROM transactions WHERE creditCardId = :cardId ORDER BY date DESC")
+    fun getByCard(cardId: String): Flow<List<TransactionEntity>>
+
+    @Query("""
+        SELECT SUM(
+            CASE WHEN isInstallment = 1 AND installmentCount > 0 THEN amount / installmentCount ELSE amount END
+        ) FROM transactions
+        WHERE direction = 'EXPENSE' AND category = 'CREDIT_CARD_PAYMENT' AND creditCardId = :cardId
+        AND (
+            (date BETWEEN :start AND :end)
+            OR (isFixed = 1 AND date <= :end)
+            OR (
+                isInstallment = 1 AND date <= :end AND (((:end - date) / 2629746000) < installmentCount)
+            )
+        )
+    """)
+    fun getTotalCardExpensesByMonth(cardId: String, start: Long, end: Long): Flow<Double?>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTransaction(transaction: TransactionEntity)
 

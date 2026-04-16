@@ -7,9 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import br.dev.allan.controlefinanceiro.domain.model.CreditCard
 import br.dev.allan.controlefinanceiro.presentation.ui.screens.creditCardsScreen.CreditCardsScreen
-import br.dev.allan.controlefinanceiro.presentation.ui.screens.creditCardsScreen.CreditCardsScreenContainer
 import br.dev.allan.controlefinanceiro.presentation.ui.screens.homeScreen.HomeScreen
 import br.dev.allan.controlefinanceiro.presentation.ui.screens.reportsScreen.ReportsScreen
 import br.dev.allan.controlefinanceiro.presentation.ui.screens.transactionsScreen.TransactionsScreen
@@ -37,19 +35,9 @@ fun NavHost(
         }
 
         composable< CreditCardsRoute> {
-            CreditCardsScreenContainer(
-                onCardClick = { cardId ->
-                    // exemplo de navegação para detalhes
-                    navController.navigate("cardDetails/$cardId")
-                }
+            CreditCardsScreen(
+
             )
         }
-
-        composable("cardDetails/{cardId}") { backStackEntry ->
-            val cardId = backStackEntry.arguments?.getString("cardId") ?: return@composable
-            // aqui você pode mostrar a tela de detalhes usando cardId
-            // CardDetailsScreen(cardId = cardId)
-        }
-
     }
 }

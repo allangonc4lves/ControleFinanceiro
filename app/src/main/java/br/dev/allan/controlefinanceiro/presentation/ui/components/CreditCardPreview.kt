@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,21 +30,39 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import br.dev.allan.controlefinanceiro.domain.model.CreditCardPreviewType
 
 @Composable
 fun CreditCardPreview(
     bankName: String,
     brand: String,
     lastDigits: String,
+    modifier: Modifier = Modifier,
     backgroundColorLong: Long,
-    modifier: Modifier = Modifier
+    previewType: CreditCardPreviewType = CreditCardPreviewType.DEFAULT,
 ) {
     val cornerRadius = 16.dp
     val bgColor = Color(backgroundColorLong)
     val contentColor = if (bgColor.luminance() > 0.5f) Color(0xFF1A1A1A) else Color.White
 
+    var w = 350.dp
+    var h = 190.dp
+    var bankNameFontSize = 18.sp
+    var brandFontSize = 16.sp
+    var digitsFontSize = 20.sp
+
+    if (previewType == CreditCardPreviewType.SMALL) {
+        w = 220.dp
+        h = 140.dp
+        bankNameFontSize = 14.sp
+        brandFontSize = 14.sp
+        digitsFontSize = 11.sp
+    }
+
     Box(
         modifier = modifier
+            .width(w)
+            .height(h)
             .shadow(
                 elevation = 12.dp,
                 shape = RoundedCornerShape(cornerRadius),
@@ -136,7 +155,7 @@ fun CreditCardPreview(
                 Text(
                     text = brand.uppercase(),
                     color = contentColor.copy(alpha = 0.9f),
-                    fontSize = 16.sp,
+                    fontSize = brandFontSize,
                     fontWeight = FontWeight.ExtraBold,
                     letterSpacing = 1.sp
                 )
@@ -146,7 +165,7 @@ fun CreditCardPreview(
                 Text(
                     text = "Credit Card".uppercase(),
                     color = contentColor.copy(alpha = 0.6f),
-                    fontSize = 10.sp,
+                    fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.5.sp
                 )
@@ -154,7 +173,7 @@ fun CreditCardPreview(
                 Text(
                     text = "••••  ••••  •••• $lastDigits",
                     color = contentColor,
-                    fontSize = 20.sp,
+                    fontSize = digitsFontSize,
                     fontWeight = FontWeight.SemiBold,
                     letterSpacing = 2.sp
                 )
@@ -163,7 +182,7 @@ fun CreditCardPreview(
             Text(
                 text = bankName,
                 color = contentColor,
-                fontSize = 18.sp,
+                fontSize = bankNameFontSize,
                 fontWeight = FontWeight.Medium,
                 maxLines = 1
             )
