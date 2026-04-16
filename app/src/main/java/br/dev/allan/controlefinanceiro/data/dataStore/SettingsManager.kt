@@ -1,4 +1,4 @@
-package br.dev.allan.controlefinanceiro.data.settings
+package br.dev.allan.controlefinanceiro.data.dataStore
 
 import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey

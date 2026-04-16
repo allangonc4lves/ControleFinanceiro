@@ -87,12 +87,8 @@ fun CustomOutlinedTextField(
         value = textFieldValueState,
         visualTransformation = visualTransformation,
         onValueChange = { newValue ->
-            // Se for modo DIGITS, o componente tenta ser "esperto".
-            // Mas para moeda, isso atrapalha.
             val filteredText = if (inputMode == InputModeCustomTextField.DIGITS) {
-                // Se o valor já vem formatado da VM (contém R$),
-                // não devemos filtrar aqui, ou quebraremos a exibição.
-                if (newValue.text.contains("R$")) newValue.text else newValue.text.filter { it.isDigit() }.take(maxLength)
+                newValue.text.filter { it.isDigit() }.take(maxLength)
             } else {
                 newValue.text.take(maxLength)
             }
@@ -106,7 +102,6 @@ fun CustomOutlinedTextField(
                 newValue.copy(text = filteredText)
             }
 
-            // Manda o texto para a ViewModel (que fará a limpeza real)
             onValueChange(filteredText)
         },
         singleLine = true,

@@ -5,7 +5,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import br.dev.allan.controlefinanceiro.data.settings.SettingsManager
 import br.dev.allan.controlefinanceiro.domain.model.Transaction
 import br.dev.allan.controlefinanceiro.domain.model.TransactionCategory
 import br.dev.allan.controlefinanceiro.domain.model.TransactionDirection
@@ -16,20 +15,19 @@ import br.dev.allan.controlefinanceiro.domain.usecase.ValidateCategory
 import br.dev.allan.controlefinanceiro.domain.usecase.ValidateText
 import br.dev.allan.controlefinanceiro.presentation.ui.features.add_transaction.AddTransactionUiState
 import br.dev.allan.controlefinanceiro.presentation.ui.features.add_transaction.SaveTransactionUiEvent
-import br.dev.allan.controlefinanceiro.util.CurrencyManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.text.DecimalFormat
+import java.text.DecimalFormatSymbols
+import java.util.Locale
 import javax.inject.Inject
+import kotlin.text.replace
 
 @HiltViewModel
 class AddTransactionViewModel @Inject constructor(
-    private val settingsManager: SettingsManager,
-    private val currencyManager: CurrencyManager,
     private val repository: TransactionRepository,
     private val validateText: ValidateText = ValidateText(),
     private val validateAmount: ValidateAmount = ValidateAmount(),
@@ -47,24 +45,24 @@ class AddTransactionViewModel @Inject constructor(
 
     }
 
-    val currentCurrencyCode = settingsManager.currencyCode
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "BRL")
-
     fun onAmountChange(newAmount: String) {
-        val digitsOnly = newAmount.filter { it.isDigit() }
+        var digitsOnly = newAmount.filter { it.isDigit() }
 
-        val code = currentCurrencyCode.value
+        if (digitsOnly.length > 9) {
+            digitsOnly = digitsOnly.take(9)
+        }
 
         val doubleValue = digitsOnly.toDoubleOrNull()?.div(100) ?: 0.0
-        val formatted = currencyManager.formatByCurrencyCode(doubleValue, code)
+        val symbols = DecimalFormatSymbols(Locale("pt", "BR")).apply {
+            currencySymbol = ""
+            decimalSeparator = ','
+            groupingSeparator = '.'
+        }
+
+        val formatter = DecimalFormat("#,##0.00", symbols)
+        val formatted = formatter.format(doubleValue).trim()
 
         uiState = uiState.copy(amount = formatted)
-    }
-
-    fun updateCurrency(newCode: String) {
-        viewModelScope.launch {
-            settingsManager.setCurrencyCode(newCode)
-        }
     }
 
     fun onCategoryChange(category: TransactionCategory) {

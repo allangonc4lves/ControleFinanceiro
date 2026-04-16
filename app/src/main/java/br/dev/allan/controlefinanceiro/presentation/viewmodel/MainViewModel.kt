@@ -2,7 +2,7 @@ package br.dev.allan.controlefinanceiro.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import br.dev.allan.controlefinanceiro.data.settings.SettingsManager
+import br.dev.allan.controlefinanceiro.data.dataStore.SettingsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn

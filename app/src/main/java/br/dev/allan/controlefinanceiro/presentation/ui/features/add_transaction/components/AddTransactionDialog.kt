@@ -94,7 +94,7 @@ fun AddTransactionDialog(
                             label = "Valor*",
                             forceCursorAtEnd = true,
                             inputMode = InputModeCustomTextField.DIGITS,
-                            maxLength = 10,
+                            maxLength = 9,
                             keyboardType = KeyboardType.NumberPassword,
                             capitalization = KeyboardCapitalization.None,
                             isError = state.amountError != null,
@@ -142,7 +142,7 @@ fun AddTransactionDialog(
                         showQuantity = false
                     )
 
-                    if (state.direction == TransactionDirection.EXPENSE) {
+                    if (state.direction == TransactionDirection.EXPENSE) {}
                         SwitchAddTransaction(
                             text = "Parceladas",
                             checked = state.transactionType == TransactionType.INSTALLMENT,
@@ -154,7 +154,6 @@ fun AddTransactionDialog(
                             showQuantity = state.transactionType == TransactionType.INSTALLMENT
                         )
 
-                    }
                     DropdownAddTransaction(
                         selectedType = state.direction,
                         selectedCategory = state.category,

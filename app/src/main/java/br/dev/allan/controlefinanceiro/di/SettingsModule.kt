@@ -1,7 +1,7 @@
 package br.dev.allan.controlefinanceiro.di
 
 import android.content.Context
-import br.dev.allan.controlefinanceiro.data.settings.SettingsManager
+import br.dev.allan.controlefinanceiro.data.dataStore.SettingsManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

@@ -15,6 +15,7 @@ data class AddCreditCardUiState (
         0xFFF4511EL, // laranja avermelhado
         0xFF6A1B9AL, // roxo
         0xFF00897BL, // teal
+        0xFFCC092FL, // vermelho
         0xFF000000L, // preto
         0xFFFFD700L, // dourado
         0xFFC0C0C0L, // prata

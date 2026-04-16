@@ -103,7 +103,6 @@ fun HomeScreen(
                     startPadding = 0,
                     endPadding = 8,
                 )
-
             }
         }
         if (recentsTransactions.isNotEmpty()) {

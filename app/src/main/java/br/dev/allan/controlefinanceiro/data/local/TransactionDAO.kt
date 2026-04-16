@@ -65,8 +65,20 @@ interface TransactionDao {
     ) 
     FROM transactions 
     WHERE direction = 'INCOME' 
-    AND ((date BETWEEN :start AND :end) OR (isFixed = 1 AND date <= :end))
-"""
+    AND (
+        (date BETWEEN :start AND :end) 
+
+        OR (isFixed = 1 AND date <= :end)
+
+        OR (
+            isInstallment = 1 
+            AND date <= :end 
+            AND (
+                ((:end - date) / 2629746000) < installmentCount
+            )
+        )
+    )
+    """
     )
     fun getTotalIncomesByMonth(start: Long, end: Long): Flow<Double?>
 
