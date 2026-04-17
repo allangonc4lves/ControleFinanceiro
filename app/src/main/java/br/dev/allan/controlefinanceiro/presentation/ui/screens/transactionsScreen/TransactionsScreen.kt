@@ -35,6 +35,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import br.dev.allan.controlefinanceiro.domain.model.TransactionUIModel
+import br.dev.allan.controlefinanceiro.presentation.ui.components.CustomTextTitle
 import br.dev.allan.controlefinanceiro.presentation.viewmodel.MonthTransactionsViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -95,7 +96,7 @@ fun MonthSelector(
         .replaceFirstChar { it.uppercase() }
 
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().padding(start = 64.dp, end = 64.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -103,11 +104,7 @@ fun MonthSelector(
             Icon(Icons.Default.KeyboardDoubleArrowLeft, contentDescription = "Mês Anterior")
         }
 
-        Text(
-            text = monthLabel,
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold
-        )
+        CustomTextTitle( text = monthLabel )
 
         IconButton(onClick = onNextMonth) {
             Icon(Icons.Default.KeyboardDoubleArrowRight, contentDescription = "Próximo Mês")

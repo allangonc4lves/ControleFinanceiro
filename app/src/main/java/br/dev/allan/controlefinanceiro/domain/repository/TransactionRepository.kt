@@ -16,6 +16,7 @@ interface TransactionRepository {
     suspend fun incrementPaidInstallment(id: Int)
     suspend fun updateTransactionsPaymentStatus(ids: List<Int>, isPaid: Boolean)
     fun getCreditCardTransactions(monthYear: String? = null): Flow<List<Transaction>>
+    fun getTotalUnpaidForCard(cardId: String): Flow<Double>
     suspend fun markAsPaid(transactionId: String, monthYear: String)
     suspend fun markAsUnpaid(transactionId: String, monthYear: String)
     suspend fun insertTransaction(transaction: Transaction): Long

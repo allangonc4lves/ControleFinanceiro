@@ -103,11 +103,12 @@ class CreditCardTransactionViewModel @Inject constructor(
         _selectedCardId,
         _currentMonth
     ) { cardId, monthMillis ->
-        cardId to monthMillis
-    }.flatMapLatest { (cardId, monthMillis) ->
+        val monthYear = SimpleDateFormat("MM-yyyy", Locale.getDefault()).format(Date(monthMillis))
+        Triple(cardId, monthMillis, monthYear)
+    }.flatMapLatest { (cardId, monthMillis, monthYear) ->
         if (cardId == null) return@flatMapLatest flowOf(emptyList<CreditCardAmountByYear>())
 
-        transactionRepository.getCreditCardTransactions(null).map { allTransactions ->
+        transactionRepository.getCreditCardTransactions(monthYear).map { allTransactions ->
             val cal = Calendar.getInstance().apply { timeInMillis = monthMillis }
             val selectedYear = cal.get(Calendar.YEAR)
             val selectedMonth = cal.get(Calendar.MONTH)
@@ -144,6 +145,19 @@ class CreditCardTransactionViewModel @Inject constructor(
             }
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val totalOpenInvoicesState = _selectedCardId
+        .flatMapLatest { cardId ->
+            if (cardId == null) {
+                flowOf(currencyManager.formatByCurrencyCode(0.0, "BRL"))
+            } else {
+                transactionRepository.getTotalUnpaidForCard(cardId).map { total ->
+                    currencyManager.formatByCurrencyCode(total, "BRL")
+                }
+            }
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "R$ 0,00")
 
     fun markMonthAsPaid(isPaid: Boolean) {
         viewModelScope.launch {

@@ -42,11 +42,10 @@ fun TransactionEntity.toDomain(
 
     val isPaidThisMonth = if (!monthYear.isNullOrBlank()) {
         payments.any { payment ->
-            payment.transactionId == this.id.toString() &&
-                    payment.monthYear == monthYear
+            payment.transactionId == this.id.toString() && payment.monthYear == monthYear
         }
     } else {
-        this.isPaid
+        if (this.creditCardId != null) false else this.isPaid
     }
 
     return Transaction(

@@ -1,5 +1,8 @@
 package br.dev.allan.controlefinanceiro.presentation.ui.screens.creditCardsScreen
 
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
@@ -40,11 +43,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import br.dev.allan.controlefinanceiro.domain.model.TransactionUIModel
@@ -60,6 +67,7 @@ fun CreditCardsScreen(
 ) {
     val cards by viewModel.cards.collectAsState()
     val transactions by viewModel.transactionsUiState.collectAsState()
+    val totalOpenInvoices by viewModel.totalOpenInvoicesState.collectAsState()
     val chartData by viewModel.chartDataState.collectAsState()
     val currentMonth by viewModel.currentMonth.collectAsState()
 
@@ -99,17 +107,7 @@ fun CreditCardsScreen(
             )
         }
 
-        if (chartData.isNotEmpty()) {
-            CreditCardBarChart(
-                data = chartData,
-                barColor = selectedCardColor,
-                currencyManager = viewModel.currencyManager,
-                modifier = Modifier.fillMaxWidth(),
-                onStatusClick = { isPaid ->
-                    viewModel.markMonthAsPaid(isPaid)
-                }
-            )
-        }
+        Spacer(modifier = Modifier.height(8.dp))
 
         MonthSelector(
             currentMonthMillis = currentMonth,
@@ -119,9 +117,23 @@ fun CreditCardsScreen(
 
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            contentPadding = PaddingValues(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
+            item {
+                if (chartData.isNotEmpty()) {
+                    CreditCardBarChart(
+                        data = chartData,
+                        barColor = selectedCardColor,
+                        currencyManager = viewModel.currencyManager,
+                        totalOpenInvoices = totalOpenInvoices,
+                        modifier = Modifier.fillMaxWidth(),
+                        onStatusClick = { isPaid ->
+                            viewModel.markMonthAsPaid(isPaid)
+                        }
+                    )
+                }
+            }
             items(transactions, key = { it.id }) { transaction ->
                 CardTransactionItem(transaction)
             }
@@ -165,11 +177,13 @@ fun CardTransactionItem(item: TransactionUIModel) {
     }
 }
 
+
 @Composable
 fun CreditCardBarChart(
     data: List<CreditCardAmountByYear>,
     barColor: Color,
     currencyManager: CurrencyManager,
+    totalOpenInvoices: String,
     modifier: Modifier = Modifier,
     onStatusClick: (Boolean) -> Unit
 ) {
@@ -179,11 +193,9 @@ fun CreditCardBarChart(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(16.dp)
             .background(Color.Gray.copy(alpha = 0.05f), RoundedCornerShape(12.dp))
             .padding(16.dp)
     ) {
-        // --- CABEÇALHO COM CHECKBOX ---
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -197,12 +209,25 @@ fun CreditCardBarChart(
                 )
                 Text(
                     text = currencyManager.formatByCurrencyCode(selectedMonthData?.totalValue ?: 0.0, "BRL"),
-                    style = MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Black
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = "FATURAS EM ABERTO",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color.Gray
+                )
+                Text(
+                    text = totalOpenInvoices,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
 
-            // O Checkbox/Status na frente do título/valor
             if (selectedMonthData != null && selectedMonthData.totalValue > 0) {
                 StatusCheckbox(
                     isPaid = selectedMonthData.isPaid,
@@ -211,7 +236,7 @@ fun CreditCardBarChart(
             }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(4.dp))
 
         Row(
             modifier = Modifier
@@ -221,7 +246,22 @@ fun CreditCardBarChart(
             verticalAlignment = Alignment.Bottom
         ) {
             data.forEach { item ->
-                val barHeightFraction = (item.totalValue / maxValue).toFloat()
+                var animationTriggered by remember { mutableStateOf(false) }
+
+                val targetHeight = (item.totalValue / maxValue).toFloat().coerceIn(0.00f, 0.7f)
+
+                val animatedHeight by animateFloatAsState(
+                    targetValue = if (animationTriggered) targetHeight else 0f,
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                        stiffness = Spring.StiffnessLow
+                    ),
+                    label = "BarHeight"
+                )
+
+                LaunchedEffect(item.totalValue) {
+                    animationTriggered = true
+                }
 
                 Column(
                     modifier = Modifier.weight(1f).fillMaxHeight(),
@@ -230,15 +270,14 @@ fun CreditCardBarChart(
                 ) {
                     Box(
                         modifier = Modifier
-                            .fillMaxHeight(barHeightFraction.coerceIn(0.05f, 1f))
-                            .width(10.dp)
+                            .fillMaxHeight(animatedHeight)
+                            .width(15.dp)
                             .clip(RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp))
                             .background(
                                 if (item.isSelected) barColor
                                 else barColor.copy(alpha = 0.2f)
                             )
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = item.monthName.take(3).uppercase(),
                         style = MaterialTheme.typography.labelSmall,
@@ -251,34 +290,6 @@ fun CreditCardBarChart(
     }
 }
 
-@Composable
-fun StatusBadge(isPaid: Boolean, onClick: () -> Unit) {
-    Surface(
-        onClick = onClick,
-        color = if (isPaid) Color(0xFFE8F5E9) else Color(0xFFFFF3E0),
-        shape = RoundedCornerShape(16.dp),
-        border = BorderStroke(1.dp, if (isPaid) Color(0xFF2E7D32) else Color(0xFFEF6C00).copy(alpha = 0.5f))
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = if (isPaid) Icons.Default.CheckCircle else Icons.Default.RadioButtonUnchecked,
-                contentDescription = null,
-                modifier = Modifier.size(16.dp),
-                tint = if (isPaid) Color(0xFF2E7D32) else Color(0xFFEF6C00)
-            )
-            Spacer(modifier = Modifier.width(6.dp))
-            Text(
-                text = if (isPaid) "PAGO" else "MARCAR PAGO",
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.Bold,
-                color = if (isPaid) Color(0xFF2E7D32) else Color(0xFFEF6C00)
-            )
-        }
-    }
-}
 
 @Composable
 fun StatusCheckbox(
@@ -293,7 +304,6 @@ fun StatusCheckbox(
             .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Ícone de Checkbox
         Icon(
             imageVector = if (isPaid) Icons.Default.CheckBox else Icons.Default.CheckBoxOutlineBlank,
             contentDescription = null,

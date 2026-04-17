@@ -51,6 +51,35 @@ class TransactionRepositoryImpl @Inject constructor(
         }
     }
 
+    override fun getTotalUnpaidForCard(cardId: String): Flow<Double> {
+        return combine(
+            transactionDao.getAllTransactions(),
+            transactionDao.getAllPaymentStatus()
+        ) { transactions, payments ->
+
+            val cardTransactions = transactions.filter { it.creditCardId == cardId }
+            var globalUnpaidTotal = 0.0
+
+            cardTransactions.forEach { transaction ->
+                val parcelValue = if (transaction.isInstallment && transaction.installmentCount > 0) {
+                    transaction.amount / transaction.installmentCount
+                } else {
+                    transaction.amount
+                }
+
+                val paidMonthsCount = payments.count { it.transactionId == transaction.id.toString() }
+
+                val remainingUnpaid = transaction.amount - (paidMonthsCount * parcelValue)
+
+                if (remainingUnpaid > 0) {
+                    globalUnpaidTotal += remainingUnpaid
+                }
+            }
+
+            globalUnpaidTotal
+        }
+    }
+
     override fun getTotalExpensesByMonth(start: Long, end: Long) = transactionDao.getTotalExpensesByMonth(start, end)
 
     override fun getTotalIncomesByMonth(start: Long, end: Long) = transactionDao.getTotalIncomesByMonth(start, end)
