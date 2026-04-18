@@ -63,6 +63,10 @@ fun AddTransactionDialog(
 
     var showDeleteConfirm by remember { mutableStateOf(false) }
 
+    val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).apply {
+        timeZone = java.util.TimeZone.getTimeZone("UTC")
+    }
+
     LaunchedEffect(transactionId) {
         if (transactionId != null && transactionId != -1) {
             viewModel.loadTransactionToEdit(transactionId)
@@ -164,11 +168,7 @@ fun AddTransactionDialog(
                     }
 
                     CustomOutlinedTextField(
-                        value = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(
-                            Date(
-                                state.dateMillis
-                            )
-                        ),
+                        value = dateFormat.format(Date(state.dateMillis)),
                         label = "Data*",
                         isReadOnly = true,
                         isError = false,

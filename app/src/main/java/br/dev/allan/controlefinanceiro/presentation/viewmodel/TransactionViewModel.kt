@@ -213,8 +213,9 @@ class TransactionViewModel @Inject constructor(
     }
 
     fun resetState() {
+        val currentCards = uiState.cards
         currentTransactionId = null
-        uiState = AddTransactionUiState()
+        uiState = AddTransactionUiState(cards = currentCards)
     }
 
     private fun formatAmountForUi(amount: Double): String {
