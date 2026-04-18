@@ -152,6 +152,12 @@ interface TransactionDao {
     @Query("SELECT * FROM invoices_payment_status")
     fun getAllPaymentStatus(): Flow<List<PaymentStatusEntity>>
 
+    @Query("SELECT * FROM transactions WHERE date BETWEEN :startDate AND :endDate ORDER BY date DESC")
+    fun getTransactionsBetweenDates(startDate: Long, endDate: Long): Flow<List<TransactionEntity>>
+
+    @Query("SELECT * FROM invoices_payment_status")
+    fun getAllPaymentStatuses(): Flow<List<PaymentStatusEntity>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTransaction(transaction: TransactionEntity): Long
 

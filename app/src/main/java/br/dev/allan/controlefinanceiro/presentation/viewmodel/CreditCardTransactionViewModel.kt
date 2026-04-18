@@ -34,9 +34,10 @@ class CreditCardTransactionViewModel @Inject constructor(
     private val transactionRepository: TransactionRepository,
     private val cardRepository: CreditCardRepository,
     private val settingsManager: SettingsManager,
-    private val currencyManager: CurrencyManager // Agora está private com sucesso!
+    private val currencyManager: CurrencyManager
 ) : ViewModel() {
 
+    private fun Double.round2() = Math.round(this * 100.0) / 100.0
     private val _selectedCardId = MutableStateFlow<String?>(null)
     private val _currentMonth = MutableStateFlow(Calendar.getInstance().apply {
         set(Calendar.DAY_OF_MONTH, 1)
@@ -97,7 +98,8 @@ class CreditCardTransactionViewModel @Inject constructor(
                         isInstallment = transaction.isInstallment,
                         creditCardId = transaction.creditCardId,
                         category = transaction.category,
-                        direction = transaction.direction
+                        direction = transaction.direction,
+                        amount = roundedParcel
                     )
                 }
         }
@@ -139,7 +141,8 @@ class CreditCardTransactionViewModel @Inject constructor(
                     }
 
                 val totalForMonth = transactionsInMonth.sumOf {
-                    it.amount / (if (it.isInstallment) it.installmentCount else 1)
+                    val value = if (it.isInstallment) it.amount / it.installmentCount else it.amount
+                    value.round2()
                 }
 
                 CreditCardAmountByYear(

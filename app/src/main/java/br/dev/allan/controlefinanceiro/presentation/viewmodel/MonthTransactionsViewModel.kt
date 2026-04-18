@@ -46,17 +46,13 @@ class MonthTransactionsViewModel @Inject constructor(
             repository.getTransactionsByMonth(start, end).map { list ->
                 list.filter { transaction ->
                     when {
-                        // 1. Se a transação for de um mês futuro, não mostra
                         transaction.date > end -> false
 
-                        // 2. Se for parcelada, verifica se já expirou usando a nova lógica
                         transaction.isInstallment -> !transaction.isExpired(monthMillis)
 
-                        // 3. Fixas e outras passam (o filtro de data do DAO já limita o início)
                         else -> true
                     }
                 }.map { transaction ->
-                    // Usamos a função que você já criou para pegar o título com a parcela correta
                     val titleWithParcel = transaction.getDisplayTitle(monthMillis)
 
                     TransactionUIModel(
@@ -72,6 +68,7 @@ class MonthTransactionsViewModel @Inject constructor(
                         creditCardId = transaction.creditCardId,
                         formattedParcelInfo = null,
                         formattedTotalAmount = currencyManager.formatByCurrencyCode(transaction.amount, "BRL"),
+                        amount = transaction.amount
                     )
                 }
             }

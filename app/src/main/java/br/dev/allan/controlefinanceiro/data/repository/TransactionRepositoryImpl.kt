@@ -2,6 +2,7 @@ package br.dev.allan.controlefinanceiro.data.repository
 
 import br.dev.allan.controlefinanceiro.data.local.PaymentStatusEntity
 import br.dev.allan.controlefinanceiro.data.local.TransactionDao
+import br.dev.allan.controlefinanceiro.data.local.TransactionEntity
 import br.dev.allan.controlefinanceiro.data.local.mapper.toDomain
 import br.dev.allan.controlefinanceiro.data.local.mapper.toEntity
 import br.dev.allan.controlefinanceiro.domain.model.CategorySum
@@ -15,6 +16,10 @@ import javax.inject.Inject
 class TransactionRepositoryImpl @Inject constructor(
     private val transactionDao: TransactionDao
 ): TransactionRepository {
+
+    override fun getTransactionsBetweenDates(startDate: Long, endDate: Long): Flow<List<TransactionEntity>> {
+        return transactionDao.getTransactionsBetweenDates(startDate, endDate)
+    }
 
     override fun getTransactionsByMonth(start: Long, end: Long): Flow<List<Transaction>> {
         return transactionDao.getTransactionsByMonth(start, end)
@@ -98,6 +103,10 @@ class TransactionRepositoryImpl @Inject constructor(
         val dateCutoff = System.currentTimeMillis() - tenDaysInMs
 
         return transactionDao.getRecentTransactions(dateCutoff)
+    }
+
+    override fun getAllPaymentStatuses(): Flow<List<PaymentStatusEntity>> {
+        return transactionDao.getAllPaymentStatuses()
     }
 
     override suspend fun updatePaymentStatus(id: Int, isPaid: Boolean) {

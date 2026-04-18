@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.map
 import java.util.Locale
 
 private val Context.dataStore by preferencesDataStore(name = "settings")
-
 private val CURRENCY_CODE = stringPreferencesKey("currency_code")
 class SettingsManager(private val context: Context) {
 

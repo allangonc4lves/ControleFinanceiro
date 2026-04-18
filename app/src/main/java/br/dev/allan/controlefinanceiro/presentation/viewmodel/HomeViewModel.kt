@@ -8,6 +8,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import br.dev.allan.controlefinanceiro.data.dataStore.SettingsManager
+import br.dev.allan.controlefinanceiro.domain.model.Transaction
 import br.dev.allan.controlefinanceiro.domain.model.TransactionDirection
 import br.dev.allan.controlefinanceiro.domain.model.TransactionUIModel
 import br.dev.allan.controlefinanceiro.domain.repository.TransactionRepository
@@ -24,8 +25,10 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
+import java.time.Instant
 import java.time.YearMonth
 import java.time.ZoneId
+import java.time.temporal.ChronoUnit
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
@@ -60,22 +63,68 @@ class HomeViewModel @Inject constructor(
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val totalIncomes: StateFlow<Double> = snapshotFlow { selectedMonth }
-        .flatMapLatest { month ->
-            val (start, end) = getMonthRange(month)
-            repository.getTotalIncomesByMonth(start, end)
-        }
-        .map { it ?: 0.0 }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
+    val totalIncomes: StateFlow<Double> = combine(
+        snapshotFlow { selectedMonth },
+        repository.getTransactions()
+    ) { month, allTransactions ->
+        val (start, end) = getMonthRange(month)
+
+        allTransactions
+            .filter { it.direction == TransactionDirection.INCOME }
+            .sumOf { tx ->
+                val belongsToMonth = isTransactionInMonth(tx, month, start, end)
+
+                if (belongsToMonth) {
+                    if (tx.isInstallment && tx.installmentCount > 0) {
+                        (tx.amount / tx.installmentCount).round2()
+                    } else {
+                        tx.amount
+                    }
+                } else 0.0
+            }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val totalExpenses: StateFlow<Double> = snapshotFlow { selectedMonth }
-        .flatMapLatest { month ->
-            val (start, end) = getMonthRange(month)
-            repository.getTotalExpensesByMonth(start, end)
+    val totalExpenses: StateFlow<Double> = combine(
+        snapshotFlow { selectedMonth },
+        repository.getTransactions()
+    ) { month, allTransactions ->
+        val (start, end) = getMonthRange(month)
+
+        allTransactions
+            .filter { it.direction == TransactionDirection.EXPENSE }
+            .sumOf { tx ->
+                val belongsToMonth = isTransactionInMonth(tx, month, start, end)
+
+                if (belongsToMonth) {
+                    if (tx.isInstallment && tx.installmentCount > 0) {
+                        (tx.amount / tx.installmentCount).round2()
+                    } else {
+                        tx.amount
+                    }
+                } else 0.0
+            }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
+
+    private fun isTransactionInMonth(tx: Transaction, month: YearMonth, start: Long, end: Long): Boolean {
+        return when {
+            tx.isFixed -> {
+                val txMonth = YearMonth.from(Instant.ofEpochMilli(tx.date).atZone(ZoneId.of("UTC")))
+                !month.isBefore(txMonth)
+            }
+            tx.isInstallment -> {
+                val txDate = Instant.ofEpochMilli(tx.date).atZone(ZoneId.of("UTC")).toLocalDate()
+                val monthsBetween = ChronoUnit.MONTHS.between(
+                    YearMonth.from(txDate).atDay(1),
+                    month.atDay(1)
+                ).toInt()
+                monthsBetween in 0 until tx.installmentCount
+            }
+            else -> tx.date in start..end
         }
-        .map { it ?: 0.0 }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
+    }
+
+    private fun Double.round2() = Math.round(this * 100.0) / 100.0
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val chartData: StateFlow<Map<CategoryAppearance, Double>> = snapshotFlow { selectedMonth }
@@ -164,6 +213,7 @@ class HomeViewModel @Inject constructor(
                 creditCardId = item.creditCardId,
                 formattedParcelInfo = null,
                 formattedTotalAmount = currencyManager.formatByCurrencyCode(item.amount, code),
+                amount = item.amount
             )
         }
     }.stateIn(

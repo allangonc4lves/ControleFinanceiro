@@ -1,5 +1,6 @@
 package br.dev.allan.controlefinanceiro.domain.repository
 
+import br.dev.allan.controlefinanceiro.data.local.PaymentStatusEntity
 import br.dev.allan.controlefinanceiro.data.local.TransactionEntity
 import br.dev.allan.controlefinanceiro.domain.model.CategorySum
 import br.dev.allan.controlefinanceiro.domain.model.Transaction
@@ -19,6 +20,8 @@ interface TransactionRepository {
     fun getTotalUnpaidForCard(cardId: String): Flow<Double>
     suspend fun markAsPaid(transactionId: String, monthYear: String)
     suspend fun markAsUnpaid(transactionId: String, monthYear: String)
+    fun getTransactionsBetweenDates(startDate: Long, endDate: Long): Flow<List<TransactionEntity>>
+    fun getAllPaymentStatuses(): Flow<List<PaymentStatusEntity>>
     suspend fun insertTransaction(transaction: Transaction): Long
     suspend fun updateTransaction(transaction: Transaction)
     suspend fun deleteTransaction(transaction: Transaction)

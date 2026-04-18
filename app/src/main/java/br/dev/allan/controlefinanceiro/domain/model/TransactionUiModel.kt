@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.Color
 data class TransactionUIModel(
     val id: Int,
     val title: String,
+    val amount: Double,
     val formattedTotalAmount: String,
     val formattedAmount: String,
     val formattedParcelInfo: String?,
