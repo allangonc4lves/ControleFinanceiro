@@ -20,4 +20,5 @@ data class TransactionUIModel(
     val isInstallment: Boolean,
     val currentInstallment: Int = 0,
     val creditCardId: String?,
+    val installmentCount: Int,
 )

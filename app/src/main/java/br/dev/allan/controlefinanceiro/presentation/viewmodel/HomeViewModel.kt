@@ -196,19 +196,21 @@ class HomeViewModel @Inject constructor(
             TransactionUIModel(
                 id = item.id,
                 title = item.title,
+                amount = item.amount,
+                formattedTotalAmount = currencyManager.formatByCurrencyCode(item.amount, code),
                 formattedAmount = prefix + currencyManager.formatByCurrencyCode(item.amount, code),
+                formattedParcelInfo = null,
                 formattedDate = SimpleDateFormat("dd/MM/yyyy", Locale.forLanguageTag("pt-BR")).format(Date(item.date)),
                 color = if (item.direction == TransactionDirection.EXPENSE) Color(0xFFAB1A1A) else Color(0xFF1B5E20),
                 category = item.category,
+                type = item.type,
                 direction = item.direction,
                 isPaid = item.isPaid,
+                isFixed = item.isFixed,
                 isInstallment = item.isInstallment,
+                currentInstallment = item.currentInstallment,
+                installmentCount = item.installmentCount,
                 creditCardId = item.creditCardId,
-                formattedParcelInfo = null,
-                formattedTotalAmount = currencyManager.formatByCurrencyCode(item.amount, code),
-                amount = item.amount,
-                type = item.type,
-                isFixed = item.isFixed
             )
         }
     }.stateIn(

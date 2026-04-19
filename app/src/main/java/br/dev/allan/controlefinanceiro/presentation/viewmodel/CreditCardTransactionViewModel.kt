@@ -69,32 +69,25 @@ class CreditCardTransactionViewModel @Inject constructor(
             allTransactions
                 .filter { it.creditCardId == cardId }
                 .filter { transaction ->
-                    if (transaction.isInstallment) {
-                        !transaction.isExpired(_currentMonth.value) && transaction.date < endOfMonth
-                    } else {
-                        transaction.date in startOfMonth until endOfMonth
-                    }
+                    transaction.date in startOfMonth until endOfMonth
                 }
                 .map { transaction ->
-                    val currentParcel = transaction.getCurrentParcelIndex(_currentMonth.value)
-
-                    val rawParcelValue = if (transaction.isInstallment && transaction.installmentCount > 0) {
-                        transaction.amount / transaction.installmentCount
-                    } else {
-                        transaction.amount
-                    }
-                    val roundedParcel = Math.round(rawParcelValue * 100.0) / 100.0
+                    val roundedParcel = transaction.amount
 
                     TransactionUIModel(
                         id = transaction.id,
                         title = transaction.title,
-                        formattedParcelInfo = if (transaction.isInstallment) "$currentParcel / ${transaction.installmentCount}" else null,
+                        formattedParcelInfo = if (transaction.isInstallment) {
+                            "${transaction.currentInstallment} / ${transaction.installmentCount}"
+                        } else null,
                         formattedAmount = currencyManager.formatByCurrencyCode(roundedParcel, code),
                         formattedTotalAmount = currencyManager.formatByCurrencyCode(transaction.amount, code),
                         formattedDate = SimpleDateFormat("dd/MM", Locale.getDefault()).format(Date(transaction.date)),
                         color = if (transaction.direction == TransactionDirection.EXPENSE) Color.Red else Color.Green,
                         isPaid = transaction.isPaid,
                         isInstallment = transaction.isInstallment,
+                        currentInstallment = transaction.currentInstallment,
+                        installmentCount = transaction.installmentCount,
                         creditCardId = transaction.creditCardId,
                         category = transaction.category,
                         direction = transaction.direction,
@@ -112,7 +105,7 @@ class CreditCardTransactionViewModel @Inject constructor(
         _currentMonth,
         currencyCode
     ) { cardId, monthMillis, code ->
-        val monthYear = SimpleDateFormat("MM-yyyy", Locale.getDefault()).format(Date(monthMillis))
+        val monthYear = SimpleDateFormat("MM/yyyy", Locale.getDefault()).format(Date(monthMillis))
         Triple(cardId, monthMillis, monthYear)
     }.flatMapLatest { (cardId, monthMillis, monthYear) ->
         if (cardId == null) return@flatMapLatest flowOf(emptyList<CreditCardAmountByYear>())
@@ -133,18 +126,9 @@ class CreditCardTransactionViewModel @Inject constructor(
 
                 val transactionsInMonth = allTransactions
                     .filter { it.creditCardId == cardId }
-                    .filter { transaction ->
-                        if (transaction.isInstallment) {
-                            !transaction.isExpired(monthStart) && transaction.date < monthEnd
-                        } else {
-                            transaction.date in monthStart until monthEnd
-                        }
-                    }
+                    .filter { it.date in monthStart until monthEnd }
 
-                val totalForMonth = transactionsInMonth.sumOf {
-                    val value = if (it.isInstallment) it.amount / it.installmentCount else it.amount
-                    value.round2()
-                }
+                val totalForMonth = transactionsInMonth.sumOf { it.amount }.round2()
 
                 CreditCardAmountByYear(
                     monthName = SimpleDateFormat("MMM", Locale("pt", "BR")).format(Date(monthStart)),
@@ -185,7 +169,7 @@ class CreditCardTransactionViewModel @Inject constructor(
         viewModelScope.launch {
             val cardId = _selectedCardId.value ?: return@launch
             val monthMillis = _currentMonth.value
-            val monthYear = SimpleDateFormat("MM-yyyy", Locale.getDefault()).format(Date(monthMillis))
+            val monthYear = SimpleDateFormat("MM/yyyy", Locale.getDefault()).format(Date(monthMillis))
 
             transactionRepository.getCreditCardTransactions(monthYear).first().let { allTransactions ->
                 val calendar = Calendar.getInstance().apply { timeInMillis = monthMillis }
@@ -194,19 +178,17 @@ class CreditCardTransactionViewModel @Inject constructor(
 
                 val transactionsInMonth = allTransactions
                     .filter { it.creditCardId == cardId }
-                    .filter { transaction ->
-                        if (transaction.isInstallment) {
-                            !transaction.isExpired(monthMillis) && transaction.date < endOfMonth
-                        } else {
-                            transaction.date in startOfMonth until endOfMonth
-                        }
-                    }
+                    .filter { it.date in startOfMonth until endOfMonth }
 
                 transactionsInMonth.forEach { transaction ->
-                    if (isPaid) {
-                        transactionRepository.markAsPaid(transaction.id.toString(), monthYear)
+                    if (transaction.isFixed) {
+                        if (isPaid) {
+                            transactionRepository.markAsPaid(transaction.id.toString(), monthYear)
+                        } else {
+                            transactionRepository.markAsUnpaid(transaction.id.toString(), monthYear)
+                        }
                     } else {
-                        transactionRepository.markAsUnpaid(transaction.id.toString(), monthYear)
+                        transactionRepository.updatePaymentStatus(transaction.id, isPaid)
                     }
                 }
             }

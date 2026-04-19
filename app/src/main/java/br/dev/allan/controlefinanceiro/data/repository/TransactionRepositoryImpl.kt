@@ -66,10 +66,14 @@ class TransactionRepositoryImpl @Inject constructor(
             transactionDao.getByCard(cardId),
             transactionDao.getAllPaymentStatuses()
         ) { transactions, payments ->
-            transactions.filter { entity ->
-                val isPaid = payments.any { it.transactionId == entity.id.toString() }
-                !isPaid
-            }.sumOf { it.amount }
+            transactions.sumOf { entity ->
+                if (entity.isFixed) {
+                    val hasAnyPayment = payments.any { it.transactionId == entity.id.toString() }
+                    if (!hasAnyPayment) entity.amount else 0.0
+                } else {
+                    if (!entity.isPaid) entity.amount else 0.0
+                }
+            }
         }
     }
 

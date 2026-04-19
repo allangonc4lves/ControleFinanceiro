@@ -100,7 +100,6 @@ class ReportViewModel @Inject constructor(
         val creditCardGroups = mutableMapOf<String, Pair<Long, MutableList<TransactionUIModel>>>()
 
         allTransactions.forEach { tx ->
-            // 1. Filtro de Categoria
             if (filters.categoryFilter != null && tx.category.name != filters.categoryFilter) {
                 return@forEach
             }
@@ -116,7 +115,6 @@ class ReportViewModel @Inject constructor(
                     tx.isPaid
                 }
 
-                // 2. Filtro de Tipo (Incluindo a lógica de Somente Faturas)
                 val matchesType = when (filters.typeFilter) {
                     TransactionTypeFilter.ALL -> true
                     TransactionTypeFilter.INCOME -> tx.direction == TransactionDirection.INCOME
@@ -139,19 +137,21 @@ class ReportViewModel @Inject constructor(
                     val uiModel = TransactionUIModel(
                         id = tx.id,
                         title = tx.title,
-                        formattedAmount = currencyManager.formatByCurrencyCode(roundedParcel, code),
-                        formattedTotalAmount = currencyManager.formatByCurrencyCode(tx.amount, code),
-                        formattedDate = SimpleDateFormat(datePattern, Locale.getDefault()).format(Date(occurrenceDate)),
-                        formattedParcelInfo = if (tx.isInstallment) "$currentParcel/${tx.installmentCount}" else null,
-                        color = if (tx.direction == TransactionDirection.EXPENSE) Color.Red else Color.Green,
-                        isPaid = isPaidInThisMonth,
-                        isInstallment = tx.isInstallment,
-                        creditCardId = tx.creditCardId,
-                        category = tx.category,
-                        direction = tx.direction,
                         amount = roundedParcel,
+                        formattedTotalAmount = currencyManager.formatByCurrencyCode(tx.amount, code),
+                        formattedAmount = currencyManager.formatByCurrencyCode(roundedParcel, code),
+                        formattedParcelInfo = if (tx.isInstallment) "$currentParcel/${tx.installmentCount}" else null,
+                        formattedDate = SimpleDateFormat(datePattern, Locale.getDefault()).format(Date(occurrenceDate)),
+                        color = if (tx.direction == TransactionDirection.EXPENSE) Color.Red else Color.Green,
+                        category = tx.category,
                         type = tx.type,
-                        isFixed = tx.isFixed
+                        direction = tx.direction,
+                        isPaid = isPaidInThisMonth,
+                        isFixed = tx.isFixed,
+                        isInstallment = tx.isInstallment,
+                        currentInstallment = tx.currentInstallment,
+                        installmentCount = tx.installmentCount,
+                        creditCardId = tx.creditCardId,
                     )
 
                     if (tx.creditCardId != null) {
@@ -159,14 +159,12 @@ class ReportViewModel @Inject constructor(
                         if (!creditCardGroups.containsKey(key)) creditCardGroups[key] = Pair(occurrenceDate, mutableListOf())
                         creditCardGroups[key]?.second?.add(uiModel)
                     } else if (filters.typeFilter != TransactionTypeFilter.INVOICES_ONLY) {
-                        // 3. Só adiciona transação comum se NÃO estivermos no modo "Somente Faturas"
                         reportItems.add(ReportItem.Transaction(uiModel, occurrenceDate))
                     }
                 }
             }
         }
 
-        // Processamento dos grupos de cartões para criar as faturas (Invoices)
         creditCardGroups.forEach { (key, groupData) ->
             val dateSort = groupData.first
             val txs = groupData.second
@@ -188,7 +186,6 @@ class ReportViewModel @Inject constructor(
             ))
         }
 
-        // 4. Totais calculados dinamicamente com base no que sobrou na lista após os filtros
         val totalIncome = reportItems
             .filterIsInstance<ReportItem.Transaction>()
             .filter { it.model.direction == TransactionDirection.INCOME }
@@ -253,7 +250,6 @@ class ReportViewModel @Inject constructor(
                 }
             }
 
-            // CASO: COMUM
             else -> {
                 if (tx.date in start..end) dates.add(tx.date)
             }

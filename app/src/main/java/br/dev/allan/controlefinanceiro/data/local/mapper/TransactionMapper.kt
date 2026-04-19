@@ -102,6 +102,7 @@ fun TransactionEntity.toDomain(
         isPaid = if (this.isFixed) isPaidThisMonth else this.isPaid,
         isInstallment = isInstallment,
         installmentCount = installmentCount,
+        currentInstallment = currentInstallment,
         creditCardId = creditCardId,
         category = category,
         direction = direction,

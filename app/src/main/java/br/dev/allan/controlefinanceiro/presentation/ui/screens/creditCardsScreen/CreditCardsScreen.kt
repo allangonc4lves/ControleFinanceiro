@@ -161,9 +161,9 @@ fun CardTransactionItem(item: TransactionUIModel) {
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(text = item.title, style = MaterialTheme.typography.titleMedium)
-                if (item.formattedParcelInfo != null) {
+                if (item.currentInstallment > 0) {
                     Text(
-                        text = "Parcela ${item.formattedParcelInfo}",
+                        text = "Parcela ${item.currentInstallment} / ${item.installmentCount}",
                         style = MaterialTheme.typography.bodySmall,
                         color = Color.Gray
                     )

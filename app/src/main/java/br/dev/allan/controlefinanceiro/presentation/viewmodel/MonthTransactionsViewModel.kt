@@ -61,19 +61,21 @@ class MonthTransactionsViewModel @Inject constructor(
                     TransactionUIModel(
                         id = transaction.id,
                         title = transaction.title,
+                        amount = transaction.amount,
+                        formattedTotalAmount = currencyManager.formatByCurrencyCode(transaction.amount, "BRL"),
                         formattedAmount = currencyManager.formatByCurrencyCode(transaction.amount, "BRL"),
+                        formattedParcelInfo = null,
                         formattedDate = SimpleDateFormat(datePattern, Locale.getDefault()).format(Date(transaction.date)),
                         color = if (transaction.direction == TransactionDirection.EXPENSE) Color.Red else Color.Green,
                         category = transaction.category,
                         type = transaction.type,
-                        isFixed = transaction.isFixed,
                         direction = transaction.direction,
                         isPaid = transaction.isPaid,
+                        isFixed = transaction.isFixed,
                         isInstallment = transaction.isInstallment,
+                        currentInstallment = transaction.currentInstallment,
+                        installmentCount = transaction.installmentCount,
                         creditCardId = transaction.creditCardId,
-                        formattedParcelInfo = null,
-                        formattedTotalAmount = currencyManager.formatByCurrencyCode(transaction.amount, "BRL"),
-                        amount = transaction.amount
                     )
                 }
             }
