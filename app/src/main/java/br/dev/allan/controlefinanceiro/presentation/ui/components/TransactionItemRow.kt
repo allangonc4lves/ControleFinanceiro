@@ -1,0 +1,123 @@
+package br.dev.allan.controlefinanceiro.presentation.ui.components
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.CreditCard
+import androidx.compose.material.icons.filled.Pending
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import br.dev.allan.controlefinanceiro.domain.model.getAppearance
+import br.dev.allan.controlefinanceiro.utils.TransactionUIModel
+import br.dev.allan.controlefinanceiro.utils.constants.TransactionDirection
+
+@Composable
+fun TransactionItemRow(
+    uiModel: TransactionUIModel,
+    isAmountVisible: Boolean = true,
+    onClick: () -> Unit = {},
+    onTogglePayment: (() -> Unit)? = null
+) {
+    val appearance = uiModel.category?.getAppearance()
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(vertical = 8.dp, horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(42.dp)
+                .background(color = uiModel.color.copy(alpha = 0.8f), shape = CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = appearance?.icon ?: Icons.Default.Pending,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(22.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.width(12.dp))
+
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = uiModel.title + (uiModel.formattedParcelInfo?.let { " ($it)" } ?: ""),
+                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            val source = if (uiModel.creditCardId != null) "Cartão" else "Carteira"
+            Text(
+                text = "${appearance?.displayName ?: "Outros"} | $source",
+                style = MaterialTheme.typography.bodySmall,
+                color = Color.Gray
+            )
+        }
+
+        Column(horizontalAlignment = Alignment.End) {
+            Text(
+                text = if (isAmountVisible) uiModel.formattedAmount else "••••",
+                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
+                color = uiModel.color
+            )
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (uiModel.creditCardId != null) {
+                    Icon(
+                        imageVector = Icons.Default.CreditCard,
+                        contentDescription = null,
+                        tint = Color(0xFF008080),
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                }
+
+                if (uiModel.direction != TransactionDirection.INCOME) {
+                    if (onTogglePayment != null) {
+                        IconButton(
+                            onClick = onTogglePayment,
+                            modifier = Modifier.size(18.dp)
+                        ) {
+                            Icon(
+                                imageVector = if (uiModel.isPaid) Icons.Default.CheckCircle else Icons.Default.Pending,
+                                contentDescription = "Status",
+                                tint = if (uiModel.isPaid) Color(0xFF4CAF50) else Color(0xFFD32F2F),
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    } else {
+                        Icon(
+                            imageVector = if (uiModel.isPaid) Icons.Default.CheckCircle else Icons.Default.Pending,
+                            contentDescription = "Status",
+                            tint = if (uiModel.isPaid) Color(0xFF4CAF50) else Color(0xFFD32F2F),
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}

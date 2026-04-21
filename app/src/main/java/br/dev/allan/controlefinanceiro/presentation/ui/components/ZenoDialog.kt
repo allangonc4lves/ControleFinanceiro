@@ -20,7 +20,6 @@ fun ZenoDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        //title = { CustomTextTitle(text = title, color = MaterialTheme.colorScheme.onPrimaryContainer) },
         text = {
             content()
         },

@@ -7,7 +7,9 @@ import androidx.lifecycle.viewModelScope
 import br.dev.allan.controlefinanceiro.data.local.mapper.toUi
 import br.dev.allan.controlefinanceiro.domain.repository.CreditCardRepository
 import br.dev.allan.controlefinanceiro.utils.constants.TransactionDirection
+import kotlinx.coroutines.flow.first
 import br.dev.allan.controlefinanceiro.utils.constants.TransactionType
+import br.dev.allan.controlefinanceiro.domain.model.Transaction
 import br.dev.allan.controlefinanceiro.utils.TransactionUIModel
 import br.dev.allan.controlefinanceiro.domain.repository.TransactionRepository
 import br.dev.allan.controlefinanceiro.utils.CurrencyManager
@@ -112,6 +114,37 @@ class MonthTransactionsViewModel @Inject constructor(
                 }
             } else {
                 repository.updatePaymentStatus(id, !uiModel.isPaid)
+            }
+        }
+    }
+
+    fun updateTransaction(updated: TransactionUIModel, editAll: Boolean) {
+        viewModelScope.launch {
+            val original = repository.getTransactionById(updated.id) ?: return@launch
+            
+            if (editAll && (original.isInstallment || original.type == TransactionType.REPEAT)) {
+                val groupId = original.groupId
+                if (groupId != null) {
+                    val allTransactions = repository.getTransactions().first()
+                    val transactionsInGroup = allTransactions.filter { it.groupId == groupId }
+                    transactionsInGroup.forEach { tx ->
+                        repository.updateTransaction(
+                            tx.copy(
+                                title = updated.title,
+                                amount = updated.amount,
+                                isPaid = updated.isPaid
+                            )
+                        )
+                    }
+                }
+            } else {
+                repository.updateTransaction(
+                    original.copy(
+                        title = updated.title,
+                        amount = updated.amount,
+                        isPaid = updated.isPaid
+                    )
+                )
             }
         }
     }

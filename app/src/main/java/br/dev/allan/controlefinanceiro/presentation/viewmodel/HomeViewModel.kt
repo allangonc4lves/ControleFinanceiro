@@ -4,36 +4,23 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import br.dev.allan.controlefinanceiro.data.dataStore.SettingsManager
 import br.dev.allan.controlefinanceiro.data.local.mapper.toUi
-import br.dev.allan.controlefinanceiro.domain.model.Transaction
 import br.dev.allan.controlefinanceiro.utils.constants.TransactionDirection
-import br.dev.allan.controlefinanceiro.utils.TransactionUIModel
 import br.dev.allan.controlefinanceiro.domain.repository.TransactionRepository
-import br.dev.allan.controlefinanceiro.domain.model.CategoryAppearance
 import br.dev.allan.controlefinanceiro.domain.model.getAppearance
 import br.dev.allan.controlefinanceiro.domain.usecase.GetMonthlyTransactionsUseCase
 import br.dev.allan.controlefinanceiro.utils.HomeUiState
 import br.dev.allan.controlefinanceiro.utils.CurrencyManager
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.time.Instant
 import java.time.YearMonth
-import java.time.ZoneId
-import java.time.temporal.ChronoUnit
-import java.util.Date
-import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
@@ -59,13 +46,12 @@ class HomeViewModel @Inject constructor(
         val monthYearDbStr = month.format(java.time.format.DateTimeFormatter.ofPattern("MM-yyyy"))
 
         val monthlyTransactions = getMonthlyTransactionsUseCase(allTransactions, month).map { tx ->
-            val isPaidInMonth = payments.any { 
+            val isPaidInMonth = payments.any {
                 it.transactionId == tx.id.toString() && (it.monthYear == monthYearStr || it.monthYear == monthYearDbStr)
             }
             tx.copy(isPaid = tx.isPaid || isPaidInMonth)
         }
 
-        // 2. Calcular valores numéricos (Double)
         val incomeVal = monthlyTransactions
             .filter { it.direction == TransactionDirection.INCOME }
             .sumOf { getMonthlyTransactionsUseCase.getAmountForMonth(it) }
@@ -85,7 +71,6 @@ class HomeViewModel @Inject constructor(
         val totalBalanceVal = incomeVal - expenseVal
         val availableBalanceVal = incomeVal - paidVal
 
-        // 3. Preparar dados do gráfico
         val expensesByCategory = monthlyTransactions
             .filter { it.direction == TransactionDirection.EXPENSE }
             .groupBy { it.category.getAppearance() }
@@ -97,7 +82,6 @@ class HomeViewModel @Inject constructor(
             currencyManager.formatByCurrencyCode(entry.value, code)
         }
 
-        // 4. Retornar o Estado Único
         HomeUiState(
             isBalanceVisible = isVisible,
             rawBalance = totalBalanceVal,

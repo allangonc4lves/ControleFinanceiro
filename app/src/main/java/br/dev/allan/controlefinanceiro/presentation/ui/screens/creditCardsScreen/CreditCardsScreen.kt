@@ -1,6 +1,5 @@
 package br.dev.allan.controlefinanceiro.presentation.ui.screens.creditCardsScreen
 
-import android.util.Log
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -236,7 +235,6 @@ fun CardTransactionItem(item: TransactionUIModel) {
                     color = Color.Gray
                 )
             }
-
             Column(horizontalAlignment = Alignment.End) {
                 Text(
                     text = item.formattedAmount,
@@ -245,12 +243,10 @@ fun CardTransactionItem(item: TransactionUIModel) {
                     fontWeight = FontWeight.Bold
                 )
                 Text(text = item.formattedDate.toSystemDayMonth(), style = MaterialTheme.typography.bodySmall)
-                Log.i("testeDate", item.formattedDate + item.formattedDate.toSystemDayMonth())
             }
         }
     }
 }
-
 
 @Composable
 fun CreditCardBarChart(
@@ -286,9 +282,7 @@ fun CreditCardBarChart(
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Black
                 )
-
                 Spacer(modifier = Modifier.height(4.dp))
-
                 Text(
                     text = "FATURAS EM ABERTO",
                     style = MaterialTheme.typography.labelSmall,
@@ -301,7 +295,6 @@ fun CreditCardBarChart(
                     color = MaterialTheme.colorScheme.primary
                 )
             }
-
             if (selectedMonthData != null && selectedMonthData.totalValue > 0) {
                 StatusCheckbox(
                     isPaid = selectedMonthData.isPaid,
@@ -321,9 +314,7 @@ fun CreditCardBarChart(
         ) {
             data.forEach { item ->
                 var animationTriggered by remember { mutableStateOf(false) }
-
                 val targetHeight = (item.totalValue / maxValue).toFloat().coerceIn(0.00f, 0.7f)
-
                 val animatedHeight by animateFloatAsState(
                     targetValue = if (animationTriggered) targetHeight else 0f,
                     animationSpec = spring(
@@ -332,11 +323,9 @@ fun CreditCardBarChart(
                     ),
                     label = "BarHeight"
                 )
-
                 LaunchedEffect(item.totalValue) {
                     animationTriggered = true
                 }
-
                 Column(
                     modifier = Modifier
                         .weight(1f)
@@ -365,7 +354,6 @@ fun CreditCardBarChart(
         }
     }
 }
-
 
 @Composable
 fun StatusCheckbox(

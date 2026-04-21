@@ -103,7 +103,7 @@ class TransactionViewModel @Inject constructor(
         }
     }
 
-   fun save() {
+    fun save() {
         viewModelScope.launch {
             updateState { it.copy(isLoading = true) }
             val result = saveUseCase.execute(_uiState.value, currentId)

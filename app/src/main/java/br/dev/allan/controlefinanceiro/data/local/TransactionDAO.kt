@@ -12,8 +12,6 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface TransactionDao {
 
-    // --- QUERIES DE BUSCA (READ) ---
-
     @Query("SELECT * FROM transactions ORDER BY date DESC")
     fun getAllTransactions(): Flow<List<TransactionEntity>>
 
@@ -64,8 +62,6 @@ interface TransactionDao {
     @Query("SELECT * FROM transactions WHERE creditCardId = :cardId ORDER BY date DESC")
     fun getByCard(cardId: String): Flow<List<TransactionEntity>>
 
-    // --- OPERAÇÕES DE ESCRITA (WRITE) ---
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTransaction(transaction: TransactionEntity): Long
 
@@ -84,8 +80,6 @@ interface TransactionDao {
     @Query("DELETE FROM transactions WHERE groupId = :groupId")
     suspend fun deleteTransactionGroup(groupId: String)
 
-    // --- STATUS DE PAGAMENTO ---
-
     @Query("UPDATE transactions SET isPaid = :paid WHERE id = :id")
     suspend fun updatePaymentStatus(id: Int, paid: Boolean)
 
@@ -97,8 +91,6 @@ interface TransactionDao {
 
     @Query("SELECT * FROM payment_status")
     fun getAllPaymentStatuses(): Flow<List<PaymentStatusEntity>>
-
-    // --- AUXILIARES ---
 
     @Query("SELECT * FROM transactions WHERE id = :id")
     suspend fun getTransactionById(id: Int): TransactionEntity?

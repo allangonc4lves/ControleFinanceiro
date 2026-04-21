@@ -3,6 +3,7 @@ package br.dev.allan.controlefinanceiro.presentation.ui.screens.reportsScreen
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -19,10 +20,17 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ListItem
 import androidx.compose.material.icons.Icons
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.filled.Category
+import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.CreditCard
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
+import br.dev.allan.controlefinanceiro.presentation.ui.components.DateHeader
+import br.dev.allan.controlefinanceiro.presentation.ui.components.TransactionItemRow
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.TextButton
@@ -74,15 +82,12 @@ fun ReportsScreen(
 ) {
     val uiState by viewModel.reportUiState.collectAsStateWithLifecycle()
     val filterState by viewModel.filterState.collectAsStateWithLifecycle()
+    val isBalanceVisible by viewModel.isBalanceVisible.collectAsStateWithLifecycle()
     var selectedInvoice by remember { mutableStateOf<ReportItem.Invoice?>(null) }
     val sheetState = rememberModalBottomSheetState()
-
     var showDatePicker by remember { mutableStateOf(false) }
-
     var showCategorySheet by remember { mutableStateOf(false) }
-
     val dateRangePickerState = rememberDateRangePickerState()
-
     val dateFormat = SimpleDateFormat("dd/MM/yy", Locale.getDefault())
 
     if (showDatePicker) {
@@ -92,7 +97,6 @@ fun ReportsScreen(
                 TextButton(onClick = {
                     val start = dateRangePickerState.selectedStartDateMillis
                     val end = dateRangePickerState.selectedEndDateMillis
-
                     if (start != null && end != null) {
                         viewModel.updateDateRange(start, end)
                     }
@@ -131,7 +135,6 @@ fun ReportsScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(text = "Relatório", style = MaterialTheme.typography.titleLarge)
-
             OutlinedButton(onClick = { showDatePicker = true }) {
                 Text(
                     text = "${dateFormat.format(Date(filterState.startDate))} - ${
@@ -152,13 +155,13 @@ fun ReportsScreen(
         ) {
             SummaryCard(
                 title = "Receitas",
-                value = uiState.formattedTotalIncome,
+                value = if (isBalanceVisible) uiState.formattedTotalIncome else "••••",
                 color = Color(0xFF1B5E20),
                 modifier = Modifier.weight(1f)
             )
             SummaryCard(
                 title = "Despesas",
-                value = uiState.formattedTotalExpense,
+                value = if (isBalanceVisible) uiState.formattedTotalExpense else "••••",
                 color = Color(0xFFAB1A1A),
                 modifier = Modifier.weight(1f)
             )
@@ -170,8 +173,8 @@ fun ReportsScreen(
                 .padding(horizontal = 16.dp)
         ) {
             SummaryCard(
-                title = "Saldo do Período",
-                value = uiState.formattedBalance,
+                title = "Balanço do Período",
+                value = if (isBalanceVisible) uiState.formattedBalance else "••••",
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.weight(1f)
             )
@@ -185,6 +188,25 @@ fun ReportsScreen(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            item {
+                FilterChip(
+                    selected = filterState.typeFilter == TransactionTypeFilter.WALLET_ONLY,
+                    onClick = {
+                        val newFilter =
+                            if (filterState.typeFilter == TransactionTypeFilter.WALLET_ONLY)
+                                TransactionTypeFilter.ALL else TransactionTypeFilter.WALLET_ONLY
+                        viewModel.updateTypeFilter(newFilter)
+                    },
+                    label = { Text("Carteira") },
+                    leadingIcon = {
+                        Icon(
+                            Icons.Default.AccountBalanceWallet,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                )
+            }
             item {
                 FilterChip(
                     selected = filterState.typeFilter == TransactionTypeFilter.INVOICES_ONLY,
@@ -204,7 +226,6 @@ fun ReportsScreen(
                     }
                 )
             }
-
             item {
                 val selectedCategory = filterState.categoryFilter
                 FilterChip(
@@ -249,7 +270,6 @@ fun ReportsScreen(
                     }
                 )
             }
-
             item {
                 FilterChip(
                     selected = filterState.typeFilter == TransactionTypeFilter.INCOME,
@@ -261,7 +281,6 @@ fun ReportsScreen(
                     label = { Text("Receitas") }
                 )
             }
-
             item {
                 FilterChip(
                     selected = filterState.typeFilter == TransactionTypeFilter.EXPENSE,
@@ -273,7 +292,6 @@ fun ReportsScreen(
                     label = { Text("Despesas") }
                 )
             }
-
             item {
                 FilterChip(
                     selected = filterState.statusFilter == TransactionStatusFilter.PAID,
@@ -285,7 +303,6 @@ fun ReportsScreen(
                     label = { Text("Pagos") }
                 )
             }
-
             item {
                 FilterChip(
                     selected = filterState.statusFilter == TransactionStatusFilter.UNPAID,
@@ -299,40 +316,52 @@ fun ReportsScreen(
             }
         }
 
-
-
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
-            contentPadding = PaddingValues(bottom = 80.dp)
+                .padding(horizontal = 16.dp),
+            contentPadding = PaddingValues(bottom = 80.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             item {
                 Text(
                     text = "Itens do Período (${uiState.items.size})",
                     style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(bottom = 8.dp)
+                    modifier = Modifier.padding(vertical = 16.dp)
                 )
             }
-
-
             if (uiState.items.isNotEmpty()) {
-                items(uiState.items) { item ->
+                uiState.items.forEachIndexed { index, item ->
                     when (item) {
                         is ReportItem.Transaction -> {
-                            Text(text = "${item.model.title} - ${item.model.formattedAmount}")
+                            val previousItem = if (index > 0) uiState.items[index - 1] else null
+                            val showHeader = previousItem == null || 
+                                (previousItem is ReportItem.Transaction && previousItem.model.formattedDate != item.model.formattedDate) ||
+                                (previousItem is ReportItem.Invoice)
+                            if (showHeader) {
+                                item {
+                                    DateHeader(dateMillis = item.model.dateMillis)
+                                }
+                            }
+                            item {
+                                TransactionItemRow(
+                                    uiModel = item.model,
+                                    isAmountVisible = isBalanceVisible,
+                                    onClick = { }
+                                )
+                            }
                         }
-
                         is ReportItem.Invoice -> {
-                            InvoiceItem(
-                                invoice = item,
-                                onClick = { selectedInvoice = item }
-                            )
+                            item {
+                                InvoiceItem(
+                                    invoice = item,
+                                    isAmountVisible = isBalanceVisible,
+                                    onClick = { selectedInvoice = item }
+                                )
+                            }
                         }
                     }
                 }
-
-
             } else {
                 item {
                     Column(
@@ -357,39 +386,146 @@ fun ReportsScreen(
                     }
                 }
             }
-
         }
 
-        if (selectedInvoice != null) {
+        selectedInvoice?.let { invoice ->
             ModalBottomSheet(
                 onDismissRequest = { selectedInvoice = null },
-                sheetState = sheetState
+                sheetState = sheetState,
+                dragHandle = {
+                    Surface(
+                        modifier = Modifier.padding(top = 12.dp),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                        shape = CircleShape
+                    ) {
+                        Box(modifier = Modifier.size(width = 32.dp, height = 4.dp))
+                    }
+                }
             ) {
                 Column(
                     modifier = Modifier
-                        .padding(16.dp)
                         .fillMaxWidth()
+                        .padding(bottom = 32.dp)
                 ) {
-                    Text(
-                        text = "Detalhes: ${selectedInvoice!!.cardName}",
-                        style = MaterialTheme.typography.headlineSmall
-                    )
-                    Text(
-                        text = "Fatura de ${selectedInvoice!!.monthYear}",
-                        color = Color.Gray
-                    )
-
-                    Divider(modifier = Modifier.padding(vertical = 16.dp))
-
-                    selectedInvoice!!.transactions.forEach { tx ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 4.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp, vertical = 16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Surface(
+                            shape = CircleShape,
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                            modifier = Modifier.size(64.dp)
                         ) {
-                            Text(tx.title)
-                            Text(tx.formattedAmount, fontWeight = FontWeight.Bold)
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = Icons.Default.CreditCard,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(32.dp)
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(
+                            text = invoice.cardName,
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "Fatura de ${invoice.monthYear}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = if (invoice.isPaid) Color(0xFF1B5E20).copy(alpha = 0.1f) else Color(0xFFAB1A1A).copy(alpha = 0.1f)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(8.dp)
+                                        .background(
+                                            if (invoice.isPaid) Color(0xFF1B5E20) else Color(0xFFAB1A1A),
+                                            CircleShape
+                                        )
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = if (invoice.isPaid) "Paga" else "Pagamento Pendente",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (invoice.isPaid) Color(0xFF1B5E20) else Color(0xFFAB1A1A)
+                                )
+                            }
+                        }
+                    }
+
+                    HorizontalDivider(
+                        modifier = Modifier.fillMaxWidth(),
+                        thickness = 1.dp,
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                    )
+
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = 400.dp),
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        item {
+                            Text(
+                                text = "Lançamentos",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(bottom = 8.dp, start = 8.dp)
+                            )
+                        }
+                        val groupedInTransactions = invoice.transactions.groupBy { it.formattedDate }
+                        groupedInTransactions.forEach { (date, transactions) ->
+                            item {
+                                DateHeader(
+                                    dateMillis = transactions.first().dateMillis,
+                                    modifier = Modifier.padding(start = 0.dp)
+                                )
+                            }
+                            items(transactions) { tx ->
+                                TransactionItemRow(
+                                    uiModel = tx,
+                                    isAmountVisible = isBalanceVisible,
+                                    onClick = { }
+                                )
+                            }
+                        }
+                        item {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            HorizontalDivider(modifier = Modifier.padding(horizontal = 8.dp))
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Total da Fatura",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    text = if (isBalanceVisible) invoice.formattedAmount else "••••",
+                                    style = MaterialTheme.typography.headlineSmall,
+                                    fontWeight = FontWeight.Black,
+                                    color = if (invoice.isPaid) Color(0xFF1B5E20) else Color(0xFFAB1A1A)
+                                )
+                            }
                         }
                     }
                 }
@@ -410,7 +546,6 @@ fun ReportsScreen(
                             modifier = Modifier.padding(16.dp)
                         )
                     }
-
                     item {
                         ListItem(
                             headlineContent = { Text("Todas as Categorias") },
@@ -420,7 +555,6 @@ fun ReportsScreen(
                             }
                         )
                     }
-
                     items(TransactionCategory.entries) { category ->
                         val appearance = category.getAppearance()
                         ListItem(
@@ -440,7 +574,6 @@ fun ReportsScreen(
                     }
                 }
             }
-            Divider(modifier = Modifier.padding(vertical = 8.dp))
         }
     }
 }
@@ -467,13 +600,19 @@ fun SummaryCard(title: String, value: String, color: Color, modifier: Modifier =
 @Composable
 fun InvoiceItem(
     invoice: ReportItem.Invoice,
+    isAmountVisible: Boolean = true,
     onClick: () -> Unit
 ) {
-    Surface(
+    Card(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+        ),
+        border = if (invoice.isPaid) null else BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Row(
             modifier = Modifier
@@ -482,40 +621,58 @@ fun InvoiceItem(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = invoice.cardName,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = "Fatura: ${invoice.monthYear}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                if (invoice.isPaid) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.weight(1f)
+            ) {
+                Surface(
+                    shape = CircleShape,
+                    color = if (invoice.isPaid) Color(0xFF1B5E20).copy(alpha = 0.1f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                    modifier = Modifier.size(48.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = Icons.Default.CreditCard,
+                            contentDescription = null,
+                            tint = if (invoice.isPaid) Color(0xFF1B5E20) else MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                Column {
                     Text(
-                        text = "Paga",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = Color(0xFF1B5E20)
+                        text = invoice.cardName,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "Fatura: ${invoice.monthYear}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
-
             Column(horizontalAlignment = Alignment.End) {
                 Text(
-                    text = invoice.formattedAmount,
+                    text = if (isAmountVisible) invoice.formattedAmount else "••••",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Black,
-                    color = MaterialTheme.colorScheme.primary
+                    color = if (invoice.isPaid) Color(0xFF1B5E20) else Color(0xFFAB1A1A)
                 )
-                Text(
-                    text = "Ver detalhes",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.secondary
-                )
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = if (invoice.isPaid) Color(0xFF1B5E20).copy(alpha = 0.1f) else Color(0xFFAB1A1A).copy(alpha = 0.1f),
+                    modifier = Modifier.padding(top = 4.dp)
+                ) {
+                    Text(
+                        text = if (invoice.isPaid) "PAGA" else "PENDENTE",
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = if (invoice.isPaid) Color(0xFF1B5E20) else Color(0xFFAB1A1A)
+                    )
+                }
             }
         }
     }
 }
-

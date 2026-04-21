@@ -34,11 +34,19 @@ import br.dev.allan.controlefinanceiro.presentation.ui.screens.homeScreen.compon
 import br.dev.allan.controlefinanceiro.presentation.ui.main.components.ZenoDrawBoxTop
 import br.dev.allan.controlefinanceiro.presentation.ui.components.CustomTextContent
 import br.dev.allan.controlefinanceiro.presentation.ui.components.CustomTextTitle
+import br.dev.allan.controlefinanceiro.presentation.ui.components.DateHeader
+import br.dev.allan.controlefinanceiro.presentation.ui.components.TransactionItemRow
 import br.dev.allan.controlefinanceiro.presentation.ui.screens.homeScreen.components.TotalExpAndIncByMonthCard
 import br.dev.allan.controlefinanceiro.presentation.ui.screens.navigation.AddTransactionRoute
 import br.dev.allan.controlefinanceiro.presentation.ui.screens.navigation.TransactionsRoute
 import br.dev.allan.controlefinanceiro.presentation.viewmodel.HomeViewModel
 import br.dev.allan.controlefinanceiro.presentation.viewmodel.NavigationViewModel
+import br.dev.allan.controlefinanceiro.presentation.ui.features.detail_transaction.EditTransactionDialog
+import br.dev.allan.controlefinanceiro.presentation.viewmodel.MonthTransactionsViewModel
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import br.dev.allan.controlefinanceiro.utils.TransactionUIModel
 
 @Composable
 fun HomeScreen(
@@ -48,6 +56,30 @@ fun HomeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val selectedMonth = viewModel.selectedMonth
+    val transactionsViewModel: MonthTransactionsViewModel = hiltViewModel()
+
+    var selectedTransaction by remember { mutableStateOf<TransactionUIModel?>(null) }
+
+    selectedTransaction?.let { transaction ->
+        val totalIncome = uiState.transactions
+            .filter { it.direction == br.dev.allan.controlefinanceiro.utils.constants.TransactionDirection.INCOME }
+            .sumOf { it.amount }
+
+        val totalPaidExpenses = uiState.transactions
+            .filter { it.direction == br.dev.allan.controlefinanceiro.utils.constants.TransactionDirection.EXPENSE && it.isPaid }
+            .sumOf { it.amount }
+
+        EditTransactionDialog(
+            transaction = transaction,
+            totalIncome = totalIncome,
+            totalPaidExpenses = totalPaidExpenses,
+            onDismiss = { selectedTransaction = null },
+            onConfirm = { updated, editAll ->
+                transactionsViewModel.updateTransaction(updated, editAll)
+                selectedTransaction = null
+            }
+        )
+    }
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -123,65 +155,23 @@ fun HomeScreen(
         }
 
         if (uiState.transactions.isNotEmpty()) {
-            items(
-                items = uiState.transactions,
-                key = { it.id }
-            ) { item ->
-                val appearance = item.category!!.getAppearance()
+            val groupedTransactions = uiState.transactions.groupBy { it.formattedDate }
 
-                Row(
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .fillMaxWidth()
-                        .clickable {
-                            navViewModel.navigateToForm(
-                                navController = navController,
-                                route = AddTransactionRoute(id = item.id)
-                            )
-                        },
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(
-                            modifier = Modifier
-                                .size(40.dp)
-                                .background(
-                                    color = item.color,
-                                    shape = CircleShape
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = appearance.icon,
-                                contentDescription = appearance.displayName,
-                                tint = MaterialTheme.colorScheme.onSecondary,
-                                modifier = Modifier.size(20.dp)
-                            )
+            groupedTransactions.forEach { (date, transactions) ->
+                item {
+                    DateHeader(dateMillis = transactions.first().dateMillis)
+                }
+
+                items(
+                    items = transactions,
+                    key = { it.id }
+                ) { item ->
+                    TransactionItemRow(
+                        uiModel = item,
+                        onClick = {
+                            selectedTransaction = item
                         }
-                        Column(modifier = Modifier.padding(start = 4.dp)) {
-                            CustomTextTitle(
-                                item.title,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            CustomTextContent(
-                                text = appearance.displayName,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                    }
-
-                    Column(horizontalAlignment = Alignment.End) {
-                        CustomTextTitle(
-                            text = item.formattedAmount,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-
-                        CustomTextContent(
-                            text = item.formattedDate,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        )
-                    }
+                    )
                 }
             }
         } else {

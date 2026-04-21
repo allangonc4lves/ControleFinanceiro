@@ -47,10 +47,14 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import br.dev.allan.controlefinanceiro.R
-import br.dev.allan.controlefinanceiro.domain.model.getAppearance
+import br.dev.allan.controlefinanceiro.presentation.ui.components.DateHeader
+import br.dev.allan.controlefinanceiro.presentation.ui.components.TransactionItemRow
 import br.dev.allan.controlefinanceiro.utils.TransactionUIModel
-import br.dev.allan.controlefinanceiro.presentation.ui.components.CustomTextContent
 import br.dev.allan.controlefinanceiro.presentation.ui.components.CustomTextTitle
+import br.dev.allan.controlefinanceiro.presentation.ui.components.CustomTextContent
+import br.dev.allan.controlefinanceiro.presentation.ui.features.detail_transaction.EditTransactionDialog
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
 import br.dev.allan.controlefinanceiro.presentation.viewmodel.MonthTransactionsViewModel
 import kotlinx.coroutines.flow.collectLatest
 import java.text.SimpleDateFormat
@@ -66,6 +70,29 @@ fun TransactionsScreen(
     val transactions by viewModel.transactionsUiModel.collectAsStateWithLifecycle()
     val currentMonthMillis by viewModel.currentMonth.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+
+    var selectedTransaction by remember { mutableStateOf<TransactionUIModel?>(null) }
+
+    selectedTransaction?.let { transaction ->
+        val totalIncome = transactions
+            .filter { it.direction == br.dev.allan.controlefinanceiro.utils.constants.TransactionDirection.INCOME }
+            .sumOf { it.amount }
+        
+        val totalPaidExpenses = transactions
+            .filter { it.direction == br.dev.allan.controlefinanceiro.utils.constants.TransactionDirection.EXPENSE && it.isPaid }
+            .sumOf { it.amount }
+
+        EditTransactionDialog(
+            transaction = transaction,
+            totalIncome = totalIncome,
+            totalPaidExpenses = totalPaidExpenses,
+            onDismiss = { selectedTransaction = null },
+            onConfirm = { updated, editAll ->
+                viewModel.updateTransaction(updated, editAll)
+                selectedTransaction = null
+            }
+        )
+    }
 
     val groupedTransactions = remember(transactions) {
         transactions.groupBy { uiModel ->
@@ -127,114 +154,20 @@ fun TransactionsScreen(
                 ) {
                     groupedTransactions.forEach { (dateMillis, items) ->
                         item {
-                            DateHeader(dateMillis)
+                            DateHeader(dateMillis = dateMillis)
                         }
                         items(items, key = { it.id }) { uiModel ->
                             TransactionItemRow(
                                 uiModel = uiModel,
                                 onTogglePayment = {
                                     viewModel.togglePayment(uiModel)
+                                },
+                                onClick = {
+                                    selectedTransaction = uiModel
                                 }
                             )
                         }
                     }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun DateHeader(dateMillis: Long) {
-    val date = Date(dateMillis)
-    val dayOfWeek = SimpleDateFormat("EEEE", Locale("pt", "BR")).format(date)
-        .replaceFirstChar { it.uppercase() }
-    val dayOfMonth = SimpleDateFormat("dd", Locale.getDefault()).format(date)
-
-    Column(modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)) {
-        Text(
-            text = "$dayOfWeek, $dayOfMonth",
-            style = MaterialTheme.typography.titleSmall.copy(
-                fontWeight = FontWeight.Bold,
-                fontSize = 14.sp,
-                color = Color.DarkGray
-            )
-        )
-    }
-}
-
-@Composable
-fun TransactionItemRow(
-    uiModel: TransactionUIModel,
-    onTogglePayment: () -> Unit
-) {
-    val appearance = uiModel.category?.getAppearance()
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(
-            modifier = Modifier
-                .size(42.dp)
-                .background(color = uiModel.color.copy(alpha = 0.8f), shape = CircleShape),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = appearance?.icon ?: Icons.Default.Pending,
-                contentDescription = null,
-                tint = Color.White,
-                modifier = Modifier.size(22.dp)
-            )
-        }
-
-        Spacer(modifier = Modifier.width(12.dp))
-
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = uiModel.title,
-                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-            val source = if (uiModel.creditCardId != null) "Cartão" else "Carteira"
-            Text(
-                text = "${appearance?.displayName ?: "Outros"} | $source",
-                style = MaterialTheme.typography.bodySmall,
-                color = Color.Gray
-            )
-        }
-
-        Column(horizontalAlignment = Alignment.End) {
-            Text(
-                text = uiModel.formattedAmount,
-                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
-                color = uiModel.color
-            )
-
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                if (uiModel.creditCardId != null) {
-                    Icon(
-                        imageVector = Icons.Default.CreditCard,
-                        contentDescription = null,
-                        tint = Color(0xFF008080),
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                }
-
-                IconButton(
-                    onClick = onTogglePayment,
-                    modifier = Modifier.size(18.dp)
-                ) {
-                    Icon(
-                        imageVector = if (uiModel.isPaid) Icons.Default.CheckCircle else Icons.Default.Pending,
-                        contentDescription = "Status",
-                        tint = if (uiModel.isPaid) Color(0xFF4CAF50) else Color(0xFFD32F2F),
-                        modifier = Modifier.size(18.dp)
-                    )
                 }
             }
         }
