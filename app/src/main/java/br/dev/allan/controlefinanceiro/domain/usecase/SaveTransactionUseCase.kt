@@ -37,11 +37,16 @@ class SaveTransactionUseCase @Inject constructor(
 
         return try {
             if (id == null) {
-                if (state.transactionType == TransactionType.INSTALLMENT) {
-                    // Passamos a data convertida para a função de parcelas
-                    repository.insertTransactions(generateInstallments(state, amount, dateToSave))
-                } else {
-                    repository.insertTransaction(state.toDomain(amount, dateToSave))
+                when (state.transactionType) {
+                    TransactionType.INSTALLMENT -> {
+                        repository.insertTransactions(generateInstallments(state, amount, dateToSave, isRepeat = false))
+                    }
+                    TransactionType.REPEAT -> {
+                        repository.insertTransactions(generateInstallments(state, amount, dateToSave, isRepeat = true))
+                    }
+                    else -> {
+                        repository.insertTransaction(state.toDomain(amount, dateToSave))
+                    }
                 }
             } else {
                 repository.updateTransaction(state.toDomain(amount, dateToSave, id))
@@ -55,9 +60,11 @@ class SaveTransactionUseCase @Inject constructor(
     private fun generateInstallments(
         state: AddTransactionUiState,
         total: Double,
-        baseDate: String
+        baseDate: String,
+        isRepeat: Boolean
     ): List<Transaction> {
         val groupId = java.util.UUID.randomUUID().toString()
+        val installmentAmount = if (isRepeat) total else (total / state.installmentCount)
 
         return (0 until state.installmentCount).map { i ->
             val calendar = Calendar.getInstance().apply {
@@ -66,10 +73,9 @@ class SaveTransactionUseCase @Inject constructor(
                 add(Calendar.MONTH, i)
             }
 
-            // Converte a data da parcela atual de volta para String do banco
             val installmentDate = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(calendar.time)
 
-            state.toDomain(total / state.installmentCount, installmentDate).copy(
+            state.toDomain(installmentAmount, installmentDate).copy(
                 groupId = groupId,
                 currentInstallment = i + 1,
                 isPaid = i == 0 && state.isPaid,

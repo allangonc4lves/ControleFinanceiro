@@ -192,13 +192,13 @@ fun AddTransactionDialog(
 
                     SwitchAddTransaction(
                         text = "Repetir",
-                        checked = uiState.transactionType == TransactionType.INSTALLMENT,
+                        checked = uiState.transactionType == TransactionType.REPEAT,
                         onCheckedChange = { isChecked ->
-                            onAction(TransactionAction.TypeChanged(if (isChecked) TransactionType.INSTALLMENT else TransactionType.DEFAULT))
+                            onAction(TransactionAction.TypeChanged(if (isChecked) TransactionType.REPEAT else TransactionType.DEFAULT))
                         },
                         quantityValue = uiState.installmentCount,
                         onQuantityChange = { onAction(TransactionAction.InstallmentCountChanged(it)) },
-                        showQuantity = uiState.transactionType == TransactionType.INSTALLMENT
+                        showQuantity = uiState.transactionType == TransactionType.REPEAT
                     )
 
                     SwitchAddTransaction(
