@@ -51,11 +51,19 @@ class HomeViewModel @Inject constructor(
         settingsManager.isBalanceVisible,
         settingsManager.currencyCode,
         repository.getTransactions(),
+        repository.getAllPaymentStatuses(),
         snapshotFlow { selectedMonth }
-    ) { isVisible, code, allTransactions, month ->
+    ) { isVisible, code, allTransactions, payments, month ->
 
-        // 1. Filtrar transações do mês
-        val monthlyTransactions = getMonthlyTransactionsUseCase(allTransactions, month)
+        val monthYearStr = month.format(java.time.format.DateTimeFormatter.ofPattern("MM/yyyy"))
+        val monthYearDbStr = month.format(java.time.format.DateTimeFormatter.ofPattern("MM-yyyy"))
+
+        val monthlyTransactions = getMonthlyTransactionsUseCase(allTransactions, month).map { tx ->
+            val isPaidInMonth = payments.any { 
+                it.transactionId == tx.id.toString() && (it.monthYear == monthYearStr || it.monthYear == monthYearDbStr)
+            }
+            tx.copy(isPaid = tx.isPaid || isPaidInMonth)
+        }
 
         // 2. Calcular valores numéricos (Double)
         val incomeVal = monthlyTransactions
@@ -66,7 +74,21 @@ class HomeViewModel @Inject constructor(
             .filter { it.direction == TransactionDirection.EXPENSE }
             .sumOf { getMonthlyTransactionsUseCase.getAmountForMonth(it) }
 
-        val totalBalanceVal = incomeVal - expenseVal // Agora sim, as variáveis acima existem aqui!
+        val paidVal = monthlyTransactions
+            .filter { it.isPaid }
+            .sumOf {
+                val amount = getMonthlyTransactionsUseCase.getAmountForMonth(it)
+                if (it.direction == TransactionDirection.INCOME) amount else -amount
+            }
+
+        val pendingVal = monthlyTransactions
+            .filter { !it.isPaid }
+            .sumOf {
+                val amount = getMonthlyTransactionsUseCase.getAmountForMonth(it)
+                if (it.direction == TransactionDirection.INCOME) amount else -amount
+            }
+
+        val totalBalanceVal = incomeVal - expenseVal
 
         // 3. Preparar dados do gráfico
         val expensesByCategory = monthlyTransactions
@@ -83,10 +105,12 @@ class HomeViewModel @Inject constructor(
         // 4. Retornar o Estado Único
         HomeUiState(
             isBalanceVisible = isVisible,
-            rawBalance = totalBalanceVal, // Enviando o número para a lógica de cor
+            rawBalance = totalBalanceVal,
             balance = currencyManager.formatByCurrencyCode(totalBalanceVal, code),
             incomes = currencyManager.formatByCurrencyCode(incomeVal, code),
             expenses = currencyManager.formatByCurrencyCode(expenseVal, code),
+            paidValue = currencyManager.formatByCurrencyCode(kotlin.math.abs(paidVal), code),
+            pendingValue = currencyManager.formatByCurrencyCode(kotlin.math.abs(pendingVal), code),
             transactions = monthlyTransactions.take(10).map { it.toUi(currencyManager, code) },
             chartDataValues = expensesByCategory,
             chartDataLabels = chartLabels

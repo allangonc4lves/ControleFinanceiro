@@ -18,6 +18,7 @@ data class AddTransactionUiState(
     val category: TransactionCategory? = null,
     val transactionType: TransactionType = TransactionType.DEFAULT,
     val installmentCount: Int = 2,
+    val isDivideValue: Boolean = true,
     val currentInstallment: Int = 0,
     val isDatePickerVisible: Boolean = false,
     val isLoading: Boolean = false,

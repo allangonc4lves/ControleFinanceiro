@@ -37,16 +37,10 @@ class SaveTransactionUseCase @Inject constructor(
 
         return try {
             if (id == null) {
-                when (state.transactionType) {
-                    TransactionType.INSTALLMENT -> {
-                        repository.insertTransactions(generateInstallments(state, amount, dateToSave, isRepeat = false))
-                    }
-                    TransactionType.REPEAT -> {
-                        repository.insertTransactions(generateInstallments(state, amount, dateToSave, isRepeat = true))
-                    }
-                    else -> {
-                        repository.insertTransaction(state.toDomain(amount, dateToSave))
-                    }
+                if (state.transactionType == TransactionType.REPEAT) {
+                    repository.insertTransactions(generateInstallments(state, amount, dateToSave))
+                } else {
+                    repository.insertTransaction(state.toDomain(amount, dateToSave))
                 }
             } else {
                 repository.updateTransaction(state.toDomain(amount, dateToSave, id))
@@ -60,11 +54,10 @@ class SaveTransactionUseCase @Inject constructor(
     private fun generateInstallments(
         state: AddTransactionUiState,
         total: Double,
-        baseDate: String,
-        isRepeat: Boolean
+        baseDate: String
     ): List<Transaction> {
         val groupId = java.util.UUID.randomUUID().toString()
-        val installmentAmount = if (isRepeat) total else (total / state.installmentCount)
+        val installmentAmount = if (state.isDivideValue) (total / state.installmentCount) else total
 
         return (0 until state.installmentCount).map { i ->
             val calendar = Calendar.getInstance().apply {
@@ -79,7 +72,8 @@ class SaveTransactionUseCase @Inject constructor(
                 groupId = groupId,
                 currentInstallment = i + 1,
                 isPaid = i == 0 && state.isPaid,
-                isInstallment = true
+                isInstallment = state.isDivideValue,
+                type = TransactionType.REPEAT
             )
         }
     }

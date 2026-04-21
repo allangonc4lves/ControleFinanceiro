@@ -79,8 +79,11 @@ class TransactionViewModel @Inject constructor(
             is TransactionAction.TypeChanged ->
                 updateState { it.copy(transactionType = action.type) }
 
+            is TransactionAction.DivideValueToggle ->
+                updateState { it.copy(isDivideValue = action.divide) }
+
             is TransactionAction.InstallmentCountChanged ->
-                updateState { it.copy(installmentCount = action.count.coerceIn(2, 360)) }
+                updateState { it.copy(installmentCount = action.count.coerceIn(1, 360)) }
 
             is TransactionAction.CardSelected ->
                 updateState { it.copy(selectedCardId = action.cardId) }
@@ -140,11 +143,8 @@ class TransactionViewModel @Inject constructor(
                     direction = tx.direction,
                     isPaid = tx.isPaid,
                     selectedCardId = tx.creditCardId,
-                    transactionType = when {
-                        tx.isInstallment -> TransactionType.INSTALLMENT
-                        else -> TransactionType.DEFAULT
-                    },
-                    installmentCount = if (tx.isInstallment) tx.installmentCount else 2,
+                    transactionType = if (tx.isInstallment || tx.type == TransactionType.REPEAT) tx.type else TransactionType.DEFAULT,
+                    installmentCount = if (tx.isInstallment || tx.type == TransactionType.REPEAT) tx.installmentCount else 1,
                     isCreditCard = tx.creditCardId != null
                 )}
             }

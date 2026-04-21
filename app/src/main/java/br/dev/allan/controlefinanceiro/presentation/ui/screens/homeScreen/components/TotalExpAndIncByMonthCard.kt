@@ -18,8 +18,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.outlined.AccountBalanceWallet
 import androidx.compose.material.icons.outlined.ArrowDownward
 import androidx.compose.material.icons.outlined.ArrowUpward
+import androidx.compose.material.icons.outlined.PendingActions
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -94,7 +96,8 @@ fun TotalExpAndIncByMonthCard(
 
             Row(
                 modifier = Modifier
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceAround
             ) {
@@ -110,6 +113,27 @@ fun TotalExpAndIncByMonthCard(
                     value = if (uiState.isBalanceVisible) formattedExpenses else "R$ •••••",
                     icon = Icons.Outlined.ArrowDownward,
                     color = Color(0xFFAB1A1A)
+                )
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceAround
+            ) {
+                SummaryItem(
+                    label = "Pago",
+                    value = if (uiState.isBalanceVisible) uiState.paidValue else "R$ •••••",
+                    icon = Icons.Outlined.AccountBalanceWallet,
+                    color = Color(0xFF424242)
+                )
+
+                SummaryItem(
+                    label = "Pendente",
+                    value = if (uiState.isBalanceVisible) uiState.pendingValue else "R$ •••••",
+                    icon = Icons.Outlined.PendingActions,
+                    color = Color(0xFFE65100)
                 )
             }
         }

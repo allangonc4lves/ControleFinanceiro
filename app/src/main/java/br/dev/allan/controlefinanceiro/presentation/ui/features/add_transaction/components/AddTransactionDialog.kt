@@ -42,6 +42,7 @@ import br.dev.allan.controlefinanceiro.utils.constants.TransactionDirection
 import br.dev.allan.controlefinanceiro.utils.constants.TransactionType
 import br.dev.allan.controlefinanceiro.presentation.ui.components.Loading
 import br.dev.allan.controlefinanceiro.presentation.ui.components.CustomOutlinedTextField
+import br.dev.allan.controlefinanceiro.presentation.ui.components.CustomTextContent
 import br.dev.allan.controlefinanceiro.presentation.ui.components.CustomTextTitle
 import br.dev.allan.controlefinanceiro.presentation.ui.components.ZenoDialog
 import br.dev.allan.controlefinanceiro.presentation.viewmodel.TransactionViewModel
@@ -201,16 +202,19 @@ fun AddTransactionDialog(
                         showQuantity = uiState.transactionType == TransactionType.REPEAT
                     )
 
-                    SwitchAddTransaction(
-                        text = "Parcelar",
-                        checked = uiState.transactionType == TransactionType.INSTALLMENT,
-                        onCheckedChange = { isChecked ->
-                            onAction(TransactionAction.TypeChanged(if (isChecked) TransactionType.INSTALLMENT else TransactionType.DEFAULT))
-                        },
-                        quantityValue = uiState.installmentCount,
-                        onQuantityChange = { onAction(TransactionAction.InstallmentCountChanged(it)) },
-                        showQuantity = uiState.transactionType == TransactionType.INSTALLMENT
-                    )
+                    if (uiState.transactionType == TransactionType.REPEAT) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            CustomTextContent(text = "Dividir valor total", color = MaterialTheme.colorScheme.primary)
+                            Checkbox(
+                                checked = uiState.isDivideValue,
+                                onCheckedChange = { onAction(TransactionAction.DivideValueToggle(it)) }
+                            )
+                        }
+                    }
 
                     SwitchAddTransaction(
                         text = "Cartão de Crédito",

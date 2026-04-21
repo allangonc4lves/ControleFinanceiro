@@ -12,6 +12,7 @@ sealed class TransactionAction {
     data class DirectionChanged(val dir: TransactionDirection) : TransactionAction()
     data class TypeChanged(val type: TransactionType) : TransactionAction()
     data class InstallmentCountChanged(val count: Int) : TransactionAction()
+    data class DivideValueToggle(val divide: Boolean) : TransactionAction()
     data class CardSelected(val cardId: String?) : TransactionAction()
     data class PaidChanged(val paid: Boolean) : TransactionAction()
     data class CreditCardToggle(val isCreditCard: Boolean) : TransactionAction()
