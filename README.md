@@ -2,15 +2,13 @@
 
 📱 Preview <br> (APP EM DESENVOLVIMENTO...)<br>
 
-
 <table>
   <tr>
-    <td><img src="https://github.com/user-attachments/assets/7b14896a-5d19-452a-8d00-241474c4c80c" width="250"/></td>
-    <td><img src="https://github.com/user-attachments/assets/83bc626e-ec57-44d7-bbde-f03aae6fd309" width="250"/></td>
+    <td><img src="https://github.com/user-attachments/assets/5d4cc845-f62a-48ab-9495-947abcb321ba" width="250"/></td>
+    <td><img src="https://github.com/user-attachments/assets/0a7e0e19-2cc0-459f-9c1a-7f4af79cc5bf" width="250"/></td>
     <td><img src="https://github.com/user-attachments/assets/58e55e1d-259a-4206-b5fa-98e239a1f090" width="250"/></td>
   </tr>
 </table>
-
 
 🚀 Funcionalidades
 📊 Cadastro e acompanhamento de receitas e despesas
