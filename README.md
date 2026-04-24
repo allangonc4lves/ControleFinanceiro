@@ -77,4 +77,4 @@ Este app foi desenvolvido com foco em:
 - Simular um app real pronto para produção
 
 👨‍💻 Autor
-Desenvolvido por Allan
+Desenvolvido por allangonc4lves
