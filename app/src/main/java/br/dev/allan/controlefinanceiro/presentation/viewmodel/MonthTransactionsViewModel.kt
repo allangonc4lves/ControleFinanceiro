@@ -36,8 +36,12 @@ import javax.inject.Inject
 class MonthTransactionsViewModel @Inject constructor(
     private val repository: TransactionRepository,
     private val cardRepository: CreditCardRepository,
-    private val currencyManager: CurrencyManager
+    private val currencyManager: CurrencyManager,
+    private val settingsManager: br.dev.allan.controlefinanceiro.data.dataStore.SettingsManager
 ) : ViewModel() {
+
+    private val currencyCode = settingsManager.currencyCode
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "BRL")
 
     private val _currentMonth = MutableStateFlow(Calendar.getInstance().apply {
         set(Calendar.DAY_OF_MONTH, 1)
@@ -50,22 +54,24 @@ class MonthTransactionsViewModel @Inject constructor(
     val currentMonth = _currentMonth.asStateFlow()
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val transactionsUiModel: StateFlow<List<TransactionUIModel>> = _currentMonth
-        .flatMapLatest { monthMillis ->
-            val (start, end) = getMonthRange(monthMillis)
-            val startStr = DateHelper.fromMillisToDb(start)
-            val endStr = DateHelper.fromMillisToDb(end)
+    val transactionsUiModel: StateFlow<List<TransactionUIModel>> = kotlinx.coroutines.flow.combine(
+        _currentMonth,
+        currencyCode
+    ) { monthMillis, code ->
+        val (start, end) = getMonthRange(monthMillis)
+        val startStr = DateHelper.fromMillisToDb(start)
+        val endStr = DateHelper.fromMillisToDb(end)
 
-            repository.getTransactionsByMonth(start, end).map { list ->
-                list.filter { transaction ->
-                    when {
-                        transaction.date > endStr -> false
-                        transaction.isInstallment -> !transaction.isExpired(monthMillis)
-                        else -> true
-                    }
-                }.map { it.toUi(currencyManager, "BRL") }
-            }
+        repository.getTransactionsByMonth(start, end).map { list ->
+            list.filter { transaction ->
+                when {
+                    transaction.date > endStr -> false
+                    transaction.isInstallment -> !transaction.isExpired(monthMillis)
+                    else -> true
+                }
+            }.map { it.toUi(currencyManager, code) }
         }
+    }.flatMapLatest { it }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),

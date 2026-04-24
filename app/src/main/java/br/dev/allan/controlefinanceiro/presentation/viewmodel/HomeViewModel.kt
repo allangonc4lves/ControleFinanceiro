@@ -12,7 +12,7 @@ import br.dev.allan.controlefinanceiro.utils.constants.TransactionDirection
 import br.dev.allan.controlefinanceiro.domain.repository.TransactionRepository
 import br.dev.allan.controlefinanceiro.domain.model.getAppearance
 import br.dev.allan.controlefinanceiro.domain.usecase.GetMonthlyTransactionsUseCase
-import br.dev.allan.controlefinanceiro.utils.HomeUiState
+import br.dev.allan.controlefinanceiro.presentation.ui.screens.state.HomeUiState
 import br.dev.allan.controlefinanceiro.utils.CurrencyManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.YearMonth
 import javax.inject.Inject
+import kotlin.math.abs
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
@@ -90,8 +91,8 @@ class HomeViewModel @Inject constructor(
             availableBalance = currencyManager.formatByCurrencyCode(availableBalanceVal, code),
             incomes = currencyManager.formatByCurrencyCode(incomeVal, code),
             expenses = currencyManager.formatByCurrencyCode(expenseVal, code),
-            paidValue = currencyManager.formatByCurrencyCode(kotlin.math.abs(paidVal), code),
-            pendingValue = currencyManager.formatByCurrencyCode(kotlin.math.abs(pendingVal), code),
+            paidValue = currencyManager.formatByCurrencyCode(abs(paidVal), code),
+            pendingValue = currencyManager.formatByCurrencyCode(abs(pendingVal), code),
             transactions = monthlyTransactions.take(10).map { it.toUi(currencyManager, code) },
             chartDataValues = expensesByCategory,
             chartDataLabels = chartLabels

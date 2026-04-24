@@ -54,7 +54,6 @@ fun ExpensesByCategoryCard(
         ) {
             if (chartDataValues.isNotEmpty()) {
 
-                // O gráfico recebe os Doubles para calcular as fatias
                 AnimatedDonutChart(data = chartDataValues)
 
                 val categoryList = chartDataValues.keys.toList()
@@ -89,7 +88,6 @@ fun ExpensesByCategoryCard(
                                 )
                             }
 
-                            // A legenda recebe a String formatada (R$ ...)
                             Text(
                                 text = chartDataLabels[category] ?: "...",
                                 style = MaterialTheme.typography.labelMedium,

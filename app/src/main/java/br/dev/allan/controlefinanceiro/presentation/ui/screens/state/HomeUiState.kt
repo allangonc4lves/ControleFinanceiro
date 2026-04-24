@@ -1,6 +1,7 @@
-package br.dev.allan.controlefinanceiro.utils
+package br.dev.allan.controlefinanceiro.presentation.ui.screens.state
 
 import br.dev.allan.controlefinanceiro.domain.model.CategoryAppearance
+import br.dev.allan.controlefinanceiro.utils.TransactionUIModel
 
 data class HomeUiState(
     val balance: String = "...",

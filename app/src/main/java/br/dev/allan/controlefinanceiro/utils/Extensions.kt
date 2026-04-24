@@ -69,7 +69,6 @@ fun String.formatAsCurrency(): String {
     val doubleValue = digits.toDoubleOrNull()?.div(100) ?: 0.0
     val symbols = DecimalFormatSymbols(Locale.getDefault()).apply {
         currencySymbol = ""
-        // Use default separators or keep them as is if specific formatting is required
     }
     return DecimalFormat("#,##0.00", symbols).format(doubleValue)
 }

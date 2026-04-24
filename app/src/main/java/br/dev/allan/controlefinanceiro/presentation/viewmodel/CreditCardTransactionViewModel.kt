@@ -8,7 +8,7 @@ import br.dev.allan.controlefinanceiro.utils.constants.TransactionDirection
 import br.dev.allan.controlefinanceiro.utils.TransactionUIModel
 import br.dev.allan.controlefinanceiro.domain.repository.CreditCardRepository
 import br.dev.allan.controlefinanceiro.domain.repository.TransactionRepository
-import br.dev.allan.controlefinanceiro.presentation.ui.screens.creditCardsScreen.CreditCardAmountByYear
+import br.dev.allan.controlefinanceiro.domain.model.CreditCardAmountByYear
 import br.dev.allan.controlefinanceiro.utils.CurrencyManager
 import br.dev.allan.controlefinanceiro.utils.DateHelper
 import br.dev.allan.controlefinanceiro.domain.model.CategoryAppearance
@@ -238,7 +238,13 @@ class CreditCardTransactionViewModel @Inject constructor(
 
                 if (isPaid) {
                     val cal = Calendar.getInstance().apply { timeInMillis = monthMillis }
-                    val start = cal.apply { set(Calendar.DAY_OF_MONTH, 1); set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0); set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0) }.timeInMillis
+                    val start = cal.apply {
+                        set(Calendar.DAY_OF_MONTH, 1)
+                        set(Calendar.HOUR_OF_DAY, 0)
+                        set(Calendar.MINUTE, 0)
+                        set(Calendar.SECOND, 0)
+                        set(Calendar.MILLISECOND, 0)
+                    }.timeInMillis
                     cal.add(Calendar.MONTH, 1)
                     val end = cal.timeInMillis
 
@@ -249,12 +255,16 @@ class CreditCardTransactionViewModel @Inject constructor(
                         .sumOf { it.amount }
 
                     val totalPaidExpenses = allTransactionsInMonth
-                        .filter { it.direction == TransactionDirection.EXPENSE && it.isPaid }
+                        .filter { it.direction == TransactionDirection.EXPENSE && it.isPaid && it.creditCardId == null }
+                        .sumOf { it.amount }
+
+                    val otherPaidInvoices = allTransactionsInMonth
+                        .filter { it.direction == TransactionDirection.EXPENSE && it.isPaid && it.creditCardId != null }
                         .sumOf { it.amount }
 
                     val invoiceTotal = transactionsInMonth.sumOf { it.amount }
 
-                    if (totalPaidExpenses + invoiceTotal > totalIncome) {
+                    if (totalPaidExpenses + otherPaidInvoices + invoiceTotal > totalIncome) {
                         _uiEvent.send("Saldo insuficiente para pagar esta fatura!")
                         return@launch
                     }

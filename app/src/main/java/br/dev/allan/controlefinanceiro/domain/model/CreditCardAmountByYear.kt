@@ -1,4 +1,4 @@
-package br.dev.allan.controlefinanceiro.presentation.ui.screens.creditCardsScreen
+package br.dev.allan.controlefinanceiro.domain.model
 
 data class CreditCardAmountByYear(
     val monthName: String,

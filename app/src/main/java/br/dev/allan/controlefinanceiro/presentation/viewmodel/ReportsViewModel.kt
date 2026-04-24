@@ -14,6 +14,7 @@ import br.dev.allan.controlefinanceiro.domain.repository.CreditCardRepository
 import br.dev.allan.controlefinanceiro.domain.repository.TransactionRepository
 import br.dev.allan.controlefinanceiro.utils.CurrencyManager
 import br.dev.allan.controlefinanceiro.utils.DateHelper
+import br.dev.allan.controlefinanceiro.utils.formatMillisToMonthYear
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
@@ -122,7 +123,7 @@ class ReportViewModel @Inject constructor(
 
             occurrences.forEach { occurrenceDate ->
                 val calOcc = Calendar.getInstance().apply { timeInMillis = occurrenceDate }
-                val currentMonthYear = SimpleDateFormat("MM-yyyy", Locale.getDefault()).format(calOcc.time)
+                val currentMonthYear = formatMillisToMonthYear(calOcc.timeInMillis)
 
                 val isPaidInThisMonth = if (tx.creditCardId != null) {
                     payments.any { it.transactionId == tx.id.toString() && it.monthYear == currentMonthYear }

@@ -9,11 +9,13 @@ import br.dev.allan.controlefinanceiro.domain.model.CategorySum
 import br.dev.allan.controlefinanceiro.domain.model.Transaction
 import br.dev.allan.controlefinanceiro.domain.repository.TransactionRepository
 import br.dev.allan.controlefinanceiro.utils.DateHelper
+import br.dev.allan.controlefinanceiro.utils.constants.TransactionType
 import br.dev.allan.controlefinanceiro.utils.formatMillisToMonthYear
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
@@ -49,9 +51,25 @@ class TransactionRepositoryImpl @Inject constructor(
     }
 
     override fun getTotalUnpaidForCard(cardId: String): Flow<Double> {
-        return transactionDao.getByCard(cardId).map { transactions ->
+        return combine(
+            transactionDao.getByCard(cardId),
+            transactionDao.getAllPaymentStatuses()
+        ) { transactions, payments ->
             transactions.sumOf { entity ->
-                if (!entity.isPaid) entity.amount else 0.0
+                // O formato no banco é yyyy-MM-dd
+                val calendar = Calendar.getInstance().apply {
+                    val dateObj = SimpleDateFormat("yyyy-MM-dd", Locale.US).parse(entity.date)
+                    time = dateObj ?: Date()
+                }
+                
+                // O formatMillisToMonthYear usa "MM/yyyy"
+                val monthYear = formatMillisToMonthYear(calendar.timeInMillis)
+                
+                val isPaidInMonth = payments.any { 
+                    it.transactionId == entity.id.toString() && it.monthYear == monthYear 
+                }
+                
+                if (!isPaidInMonth) entity.amount else 0.0
             }
         }
     }

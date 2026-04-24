@@ -63,7 +63,7 @@ fun TransactionCategory.getAppearance(): CategoryAppearance {
         TransactionCategory.UBER -> CategoryAppearance(R.string.cat_uber, Icons.Outlined.DirectionsCar, TransactionDirection.EXPENSE, Color(0xFF43A047))
         TransactionCategory.GROCERIES -> CategoryAppearance(R.string.cat_groceries, Icons.Outlined.LocalGroceryStore, TransactionDirection.EXPENSE, Color(0xFF7CB342))
         TransactionCategory.ENTERTAINMENT -> CategoryAppearance(R.string.cat_entertainment, Icons.Outlined.TheaterComedy, TransactionDirection.EXPENSE, Color(0xFFC0CA33))
-        TransactionCategory.SHOPPING -> CategoryAppearance(R.string.cat_shopping, Icons.Outlined.ShoppingBag, TransactionDirection.EXPENSE, Color(0xFFFDD835))
+        TransactionCategory.SHOPPING -> CategoryAppearance(R.string.cat_shopping, Icons.Outlined.ShoppingBag, TransactionDirection.EXPENSE, Color(0xFF29B6F6))
         TransactionCategory.HEALTH_PERSONAL_CARE -> CategoryAppearance(R.string.cat_health_personal_care, Icons.Outlined.HealthAndSafety, TransactionDirection.EXPENSE, Color(0xFF95FF00))
         TransactionCategory.EDUCATION -> CategoryAppearance(R.string.cat_education, Icons.Outlined.MenuBook, TransactionDirection.EXPENSE, Color(0xFFFB8C00))
         TransactionCategory.SUBSCRIPTIONS -> CategoryAppearance(R.string.cat_subscriptions, Icons.Outlined.Subscriptions, TransactionDirection.EXPENSE, Color(0xFF3700FF))
@@ -74,7 +74,7 @@ fun TransactionCategory.getAppearance(): CategoryAppearance {
         TransactionCategory.GIFTS_DONATION -> CategoryAppearance(R.string.cat_gifts_donation, Icons.Outlined.CardGiftcard, TransactionDirection.EXPENSE, Color(0xFF9CCC65))
         TransactionCategory.MAINTENANCE -> CategoryAppearance(R.string.cat_maintenance, Icons.Outlined.Build, TransactionDirection.EXPENSE, Color(0xFFFF7043))
         TransactionCategory.TAXES -> CategoryAppearance(R.string.cat_taxes, Icons.Outlined.MoneyOffCsred, TransactionDirection.EXPENSE, Color(0xFFAB47BC))
-        TransactionCategory.INSURANCE -> CategoryAppearance(R.string.cat_insurance, Icons.Outlined.Lock, TransactionDirection.EXPENSE, Color(0xFF29B6F6))
+        TransactionCategory.INSURANCE -> CategoryAppearance(R.string.cat_insurance, Icons.Outlined.Lock, TransactionDirection.EXPENSE, Color(0xFFFDD835))
         TransactionCategory.OTHERS_EXPENSE -> CategoryAppearance(R.string.cat_others_expense, Icons.Outlined.ArrowDownward, TransactionDirection.EXPENSE, Color(0xFF1C1A1A))
 
 
