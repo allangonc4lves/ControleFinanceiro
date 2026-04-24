@@ -79,9 +79,9 @@ class CreditCardsViewModel @Inject constructor(
         if (listOf(bankNameResult, brandResult, lastDigitsResult).any { !it.successful }) {
             uiState = uiState.copy(
                 isLoading = false,
-                bankNameError = bankNameResult.errorMessage,
-                brandError = brandResult.errorMessage,
-                lastDigitsError = lastDigitsResult.errorMessage
+                bankNameError = bankNameResult.errorMessageRes?.let { "error_res_$it" },
+                brandError = brandResult.errorMessageRes?.let { "error_res_$it" },
+                lastDigitsError = lastDigitsResult.errorMessageRes?.let { "error_res_$it" }
             )
             return
         }

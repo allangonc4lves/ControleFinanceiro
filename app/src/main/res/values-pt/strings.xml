@@ -83,6 +83,11 @@
     <string name="only_this_month">Apenas este mês</string>
     <string name="all_installments">Todas as parcelas</string>
     <string name="all_months">Todos os meses</string>
+    <string name="validation_error">Erro de validação</string>
+    <string name="required_field">Campo obrigatório</string>
+    <string name="title_validation_error">O título deve conter apenas letras e espaços</string>
+    <string name="amount_validation_error">Insira um valor válido maior que zero</string>
+    <string name="card_last_digits_error">O campo deve conter exatamente 4 números</string>
     <string name="settings">Configurações</string>
     <string name="select_main_currency">Selecione a moeda principal</string>
     <string name="brazilian_real">Real Brasileiro</string>

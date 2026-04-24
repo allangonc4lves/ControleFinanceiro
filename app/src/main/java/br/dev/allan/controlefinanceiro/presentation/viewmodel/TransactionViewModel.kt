@@ -111,7 +111,19 @@ class TransactionViewModel @Inject constructor(
             if (result.isSuccess) {
                 _uiEvent.send(SaveTransactionUiEvent.SaveSuccess)
             } else {
-                updateState { it.copy(isLoading = false) }
+                val errorMsg = result.exceptionOrNull()?.message
+                updateState { state ->
+                    val titleRes = saveUseCase.validateText.execute(state.title)
+                    val amountRes = saveUseCase.validateAmount.execute(state.amountInput)
+                    val catRes = saveUseCase.validateCategory.execute(state.category)
+
+                    state.copy(
+                        isLoading = false,
+                        titleError = titleRes.errorMessageRes?.let { "error_res_$it" },
+                        amountError = amountRes.errorMessageRes?.let { "error_res_$it" },
+                        categoryError = catRes.errorMessageRes?.let { "error_res_$it" }
+                    )
+                }
             }
         }
     }

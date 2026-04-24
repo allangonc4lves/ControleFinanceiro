@@ -75,9 +75,8 @@ fun String.formatAsCurrency(): String {
 }
 
 fun String.parseToDouble(): Double {
-    return this.replace(Regex("[^0-9,]"), "")
-        .replace(",", ".")
-        .toDoubleOrNull() ?: 0.0
+    return this.replace(Regex("[^0-9]"), "")
+        .toDoubleOrNull()?.div(100) ?: 0.0
 }
 
 fun formatAmountForUi(amount: Double): String {

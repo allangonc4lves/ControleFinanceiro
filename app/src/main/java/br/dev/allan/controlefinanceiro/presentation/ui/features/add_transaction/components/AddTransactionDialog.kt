@@ -153,7 +153,11 @@ fun AddTransactionDialog(
                             label = stringResource(R.string.title_label),
                             capitalization = KeyboardCapitalization.Sentences,
                             isError = uiState.titleError != null,
-                            errorMessage = uiState.titleError ?: "",
+                            errorMessage = uiState.titleError?.let { 
+                                if (it.startsWith("error_res_")) {
+                                    stringResource(it.removePrefix("error_res_").toInt())
+                                } else it
+                            } ?: "",
                             onValueChange = { onAction(TransactionAction.TitleChanged(it)) },
                         )
 
@@ -167,7 +171,11 @@ fun AddTransactionDialog(
                             keyboardType = KeyboardType.NumberPassword,
                             capitalization = KeyboardCapitalization.None,
                             isError = uiState.amountError != null,
-                            errorMessage = uiState.amountError ?: "",
+                            errorMessage = uiState.amountError?.let {
+                                if (it.startsWith("error_res_")) {
+                                    stringResource(it.removePrefix("error_res_").toInt())
+                                } else it
+                            } ?: "",
                             onValueChange = { onAction(TransactionAction.AmountChanged(it)) }
                         )
                     }
@@ -240,7 +248,11 @@ fun AddTransactionDialog(
                         selectedCategory = uiState.category,
                         onCategorySelected = { onAction(TransactionAction.CategoryChanged(it)) },
                         isError = uiState.categoryError != null,
-                        errorMessage = uiState.categoryError ?: ""
+                        errorMessage = uiState.categoryError?.let {
+                            if (it.startsWith("error_res_")) {
+                                stringResource(it.removePrefix("error_res_").toInt())
+                            } else it
+                        } ?: ""
                     )
 
                     if (uiState.category == TransactionCategory.OTHERS_EXPENSE) {

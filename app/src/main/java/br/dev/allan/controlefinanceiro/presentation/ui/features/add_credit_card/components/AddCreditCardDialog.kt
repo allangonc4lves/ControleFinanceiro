@@ -128,7 +128,11 @@ fun AddCreditCardDialog(
                         label = stringResource(id = R.string.bank_label),
                         capitalization = KeyboardCapitalization.Sentences,
                         isError = state.bankNameError != null,
-                        errorMessage = state.bankNameError ?: "",
+                        errorMessage = state.bankNameError?.let {
+                            if (it.startsWith("error_res_")) {
+                                stringResource(it.removePrefix("error_res_").toInt())
+                            } else it
+                        } ?: "",
                         onValueChange = { viewModel.onBankNameChange(it) }
                     )
                     Row(modifier = Modifier.fillMaxWidth()) {
@@ -138,7 +142,11 @@ fun AddCreditCardDialog(
                             label = stringResource(id = R.string.brand_label),
                             capitalization = KeyboardCapitalization.Sentences,
                             isError = state.brandError != null,
-                            errorMessage = state.brandError ?: "",
+                            errorMessage = state.brandError?.let {
+                                if (it.startsWith("error_res_")) {
+                                    stringResource(it.removePrefix("error_res_").toInt())
+                                } else it
+                            } ?: "",
                             onValueChange = { viewModel.onBrandChange(it) }
                         )
                         CustomOutlinedTextField(
@@ -150,7 +158,11 @@ fun AddCreditCardDialog(
                             capitalization = KeyboardCapitalization.None,
                             keyboardType = KeyboardType.NumberPassword,
                             isError = state.lastDigitsError != null,
-                            errorMessage = state.lastDigitsError ?: "",
+                            errorMessage = state.lastDigitsError?.let {
+                                if (it.startsWith("error_res_")) {
+                                    stringResource(it.removePrefix("error_res_").toInt())
+                                } else it
+                            } ?: "",
                             onValueChange = {
                                 viewModel.onLastDigitsChange(it)
                             }

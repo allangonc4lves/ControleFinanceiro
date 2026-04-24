@@ -1,5 +1,6 @@
 package br.dev.allan.controlefinanceiro.domain.usecase
 
+import br.dev.allan.controlefinanceiro.R
 import br.dev.allan.controlefinanceiro.domain.model.Transaction
 import br.dev.allan.controlefinanceiro.domain.repository.TransactionRepository
 import br.dev.allan.controlefinanceiro.utils.TransactionUIModel
@@ -17,9 +18,9 @@ import javax.inject.Inject
 
 class SaveTransactionUseCase @Inject constructor(
     private val repository: TransactionRepository,
-    private val validateText: ValidateText,
-    private val validateAmount: ValidateAmount,
-    private val validateCategory: ValidateCategory
+    val validateText: ValidateText,
+    val validateAmount: ValidateAmount,
+    val validateCategory: ValidateCategory
 ) {
     suspend fun execute(state: TransactionUIModel, id: Int?): Result<Unit> {
         val titleRes = validateText.execute(state.title)
@@ -27,7 +28,7 @@ class SaveTransactionUseCase @Inject constructor(
         val catRes = validateCategory.execute(state.category)
 
         if (!titleRes.successful || !amountRes.successful || !catRes.successful) {
-            return Result.failure(Exception("Validation Error"))
+            return Result.failure(Exception("validation_error"))
         }
 
         val amount = state.amountInput.parseToDouble()
