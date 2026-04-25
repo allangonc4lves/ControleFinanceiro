@@ -226,21 +226,23 @@ fun AddTransactionDialog(
                         }
                     }
 
-                    SwitchAddTransaction(
-                        text = stringResource(R.string.credit_card_label),
-                        checked = uiState.isCreditCard,
-                        onCheckedChange = { onAction(TransactionAction.CreditCardToggle(it)) },
-                        quantityValue = 0,
-                        onQuantityChange = {},
-                        showQuantity = false
-                    )
-
-                    if (uiState.isCreditCard) {
-                        CardSelector(
-                            cards = uiState.cards,
-                            selectedCardId = uiState.creditCardId,
-                            onCardSelected = { onAction(TransactionAction.CardSelected(it)) }
+                    if (uiState.direction == TransactionDirection.EXPENSE) {
+                        SwitchAddTransaction(
+                            text = stringResource(R.string.credit_card_label),
+                            checked = uiState.isCreditCard,
+                            onCheckedChange = { onAction(TransactionAction.CreditCardToggle(it)) },
+                            quantityValue = 0,
+                            onQuantityChange = {},
+                            showQuantity = false
                         )
+
+                        if (uiState.isCreditCard) {
+                            CardSelector(
+                                cards = uiState.cards,
+                                selectedCardId = uiState.creditCardId,
+                                onCardSelected = { onAction(TransactionAction.CardSelected(it)) }
+                            )
+                        }
                     }
 
                     DropdownAddTransaction(
