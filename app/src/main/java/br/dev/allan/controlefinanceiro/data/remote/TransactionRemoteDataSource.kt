@@ -1,0 +1,59 @@
+package br.dev.allan.controlefinanceiro.data.remote
+
+import br.dev.allan.controlefinanceiro.data.remote.mapper.toDto
+import br.dev.allan.controlefinanceiro.data.remote.model.TransactionDto
+import br.dev.allan.controlefinanceiro.domain.model.Transaction
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.tasks.await
+import javax.inject.Inject
+
+class TransactionRemoteDataSource @Inject constructor(
+    private val firestore: FirebaseFirestore,
+    private val auth: FirebaseAuth
+) {
+    private val collectionPath = "transactions"
+
+    suspend fun saveTransaction(transaction: Transaction) {
+        val userId = auth.currentUser?.uid ?: return
+        val dto = transaction.toDto(userId)
+        
+        android.util.Log.d("FirestoreSync", "Tentando salvar transação: ${dto.id} para o usuário: $userId")
+        
+        try {
+            firestore.collection(collectionPath)
+                .document(dto.id)
+                .set(dto)
+                .await()
+            android.util.Log.d("FirestoreSync", "Transação salva com sucesso no Firestore: ${dto.id}")
+        } catch (e: Exception) {
+            android.util.Log.e("FirestoreSync", "Erro ao salvar transação no Firestore: ${e.message}", e)
+        }
+    }
+
+    suspend fun deleteTransaction(transactionId: String) {
+        firestore.collection(collectionPath).document(transactionId).delete().await()
+    }
+
+    suspend fun syncTransactions(transactions: List<Transaction>) {
+        val userId = auth.currentUser?.uid ?: return
+        val batch = firestore.batch()
+        
+        transactions.forEach { transaction ->
+            val dto = transaction.toDto(userId)
+            val docRef = firestore.collection(collectionPath).document(dto.id)
+            batch.set(docRef, dto)
+        }
+        
+        batch.commit().await()
+    }
+
+    suspend fun fetchAllTransactions(): List<TransactionDto> {
+        val userId = auth.currentUser?.uid ?: return emptyList()
+        return firestore.collection(collectionPath)
+            .whereEqualTo("userId", userId)
+            .get()
+            .await()
+            .toObjects(TransactionDto::class.java)
+    }
+}

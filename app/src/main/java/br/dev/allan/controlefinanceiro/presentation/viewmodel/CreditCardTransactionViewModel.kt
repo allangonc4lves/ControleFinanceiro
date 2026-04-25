@@ -272,9 +272,9 @@ class CreditCardTransactionViewModel @Inject constructor(
 
                 transactionsInMonth.forEach { transaction ->
                     if (isPaid) {
-                        transactionRepository.markAsPaid(transaction.id.toString(), monthYear)
+                        transactionRepository.markAsPaid(transaction.id, monthYear)
                     } else {
-                        transactionRepository.markAsUnpaid(transaction.id.toString(), monthYear)
+                        transactionRepository.markAsUnpaid(transaction.id, monthYear)
                     }
                 }
             }

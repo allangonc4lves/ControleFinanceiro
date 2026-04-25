@@ -13,19 +13,33 @@ import br.dev.allan.controlefinanceiro.presentation.ui.features.add_credit_card.
 import br.dev.allan.controlefinanceiro.presentation.ui.features.add_transaction.components.AddTransactionDialog
 import br.dev.allan.controlefinanceiro.presentation.ui.screens.creditCardsScreen.CreditCardsScreen
 import br.dev.allan.controlefinanceiro.presentation.ui.screens.homeScreen.HomeScreen
+import br.dev.allan.controlefinanceiro.presentation.ui.screens.login.LoginScreen
 import br.dev.allan.controlefinanceiro.presentation.ui.screens.reportsScreen.ReportsScreen
 import br.dev.allan.controlefinanceiro.presentation.ui.screens.transactionsScreen.TransactionsScreen
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun NavHost(
     navController: NavHostController,
     innerPadding: PaddingValues
 ) {
+    val currentUser = FirebaseAuth.getInstance().currentUser
+    val startDest = if (currentUser == null) LoginRoute else HomeRoute
+
     NavHost(
         navController = navController,
-        startDestination = HomeRoute,
+        startDestination = startDest,
         modifier = Modifier.padding(innerPadding)
     ) {
+        composable<LoginRoute> {
+            LoginScreen(
+                onLoginSuccess = {
+                    navController.navigate(HomeRoute) {
+                        popUpTo(LoginRoute) { inclusive = true }
+                    }
+                }
+            )
+        }
         composable<HomeRoute> {
             HomeScreen(navController)
         }
@@ -57,6 +71,5 @@ fun NavHost(
                 onDismiss = { navController.popBackStack() }
             )
         }
-
     }
 }

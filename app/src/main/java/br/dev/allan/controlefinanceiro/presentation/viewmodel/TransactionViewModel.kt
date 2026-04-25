@@ -30,7 +30,7 @@ class TransactionViewModel @Inject constructor(
     private val saveUseCase: SaveTransactionUseCase
 ) : ViewModel() {
 
-    private var currentId: Int? = null
+    private var currentId: String? = null
     private val _uiState = MutableStateFlow(TransactionUIState())
     val uiState = _uiState.asStateFlow()
 
@@ -130,7 +130,7 @@ class TransactionViewModel @Inject constructor(
         _uiState.update(transform)
     }
 
-    fun loadToEdit(id: Int) {
+    fun loadToEdit(id: String) {
         viewModelScope.launch {
             repository.getTransactionById(id)?.let { tx ->
                 currentId = tx.id

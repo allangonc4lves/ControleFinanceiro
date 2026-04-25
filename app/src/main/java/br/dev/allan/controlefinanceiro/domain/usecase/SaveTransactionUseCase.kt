@@ -21,7 +21,7 @@ class SaveTransactionUseCase @Inject constructor(
     val validateAmount: ValidateAmount,
     val validateCategory: ValidateCategory
 ) {
-    suspend fun execute(state: TransactionUIState, id: Int?): Result<Unit> {
+    suspend fun execute(state: TransactionUIState, id: String?): Result<Unit> {
         val titleRes = validateText.execute(state.title)
         val amountRes = validateAmount.execute(state.amountInput)
         val catRes = validateCategory.execute(state.category)
@@ -79,8 +79,8 @@ class SaveTransactionUseCase @Inject constructor(
     }
 }
 
-private fun TransactionUIState.toDomain(amount: Double, dateForDb: String, id: Int = 0) = Transaction(
-    id = id,
+private fun TransactionUIState.toDomain(amount: Double, dateForDb: String, id: String? = null) = Transaction(
+    id = id ?: java.util.UUID.randomUUID().toString(),
     title = this.title,
     amount = amount,
     date = dateForDb,

@@ -10,7 +10,7 @@ import java.util.Date
 import java.util.Locale
 
 data class TransactionUIState(
-    val id: Int = 0,
+    val id: String = "",
     val groupId: String? = null,
     val title: String = "",
     val amount: Double = 0.0,

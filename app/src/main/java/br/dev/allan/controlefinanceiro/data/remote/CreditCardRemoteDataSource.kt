@@ -1,0 +1,41 @@
+package br.dev.allan.controlefinanceiro.data.remote
+
+import br.dev.allan.controlefinanceiro.data.remote.mapper.toDto
+import br.dev.allan.controlefinanceiro.data.remote.model.CreditCardDto
+import br.dev.allan.controlefinanceiro.domain.model.CreditCard
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.tasks.await
+import javax.inject.Inject
+
+class CreditCardRemoteDataSource @Inject constructor(
+    private val firestore: FirebaseFirestore,
+    private val auth: FirebaseAuth
+) {
+    private val collectionPath = "credit_cards"
+
+    suspend fun saveCard(card: CreditCard) {
+        val userId = auth.currentUser?.uid ?: return
+        val dto = card.toDto(userId)
+        android.util.Log.d("FirestoreSync", "Tentando salvar cartão: ${dto.id} para o usuário: $userId")
+        try {
+            firestore.collection(collectionPath).document(card.id).set(dto).await()
+            android.util.Log.d("FirestoreSync", "Cartão salvo com sucesso no Firestore: ${dto.id}")
+        } catch (e: Exception) {
+            android.util.Log.e("FirestoreSync", "Erro ao salvar cartão no Firestore: ${e.message}", e)
+        }
+    }
+
+    suspend fun deleteCard(cardId: String) {
+        firestore.collection(collectionPath).document(cardId).delete().await()
+    }
+
+    suspend fun fetchAllCards(): List<CreditCardDto> {
+        val userId = auth.currentUser?.uid ?: return emptyList()
+        return firestore.collection(collectionPath)
+            .whereEqualTo("userId", userId)
+            .get()
+            .await()
+            .toObjects(CreditCardDto::class.java)
+    }
+}

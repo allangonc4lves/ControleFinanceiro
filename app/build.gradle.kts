@@ -111,6 +111,11 @@ dependencies {
     // Material Symbols
     implementation(libs.compose.material)
     implementation(libs.compose.icons)
+
+    // Credential Manager for Google Sign-In
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
+    implementation(libs.googleid)
 }
 
 ksp {

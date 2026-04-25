@@ -14,16 +14,16 @@ interface TransactionRepository {
     fun getTransactions(): Flow<List<Transaction>>
     fun getRecentTransactions(): Flow<List<Transaction>>
     suspend fun deleteTransactionGroup(groupId: String)
-    suspend fun updatePaymentStatus(id: Int, paid: Boolean)
+    suspend fun updatePaymentStatus(id: String, paid: Boolean)
     fun getCreditCardTransactions(monthYear: String? = null): Flow<List<Transaction>>
     fun getTotalUnpaidForCard(cardId: String): Flow<Double>
     suspend fun markAsPaid(transactionId: String, monthYear: String)
     suspend fun markAsUnpaid(transactionId: String, monthYear: String)
     fun getTransactionsBetweenDates(startDate: Long, endDate: Long): Flow<List<TransactionEntity>>
     fun getAllPaymentStatuses(): Flow<List<PaymentStatusEntity>>
-    suspend fun getTransactionById(id: Int): Transaction?
-    suspend fun deleteTransaction(id: Int)
-    suspend fun insertTransaction(transaction: Transaction): Long
+    suspend fun getTransactionById(id: String): Transaction?
+    suspend fun deleteTransaction(id: String)
+    suspend fun insertTransaction(transaction: Transaction)
     suspend fun insertTransactions(transactions: List<Transaction>)
     suspend fun updateTransaction(transaction: Transaction)
     suspend fun deleteTransaction(transaction: Transaction)

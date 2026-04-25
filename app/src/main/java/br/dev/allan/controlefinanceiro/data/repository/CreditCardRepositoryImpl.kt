@@ -6,6 +6,7 @@ import br.dev.allan.controlefinanceiro.data.local.CreditCardDao
 import br.dev.allan.controlefinanceiro.data.local.CreditCardEntity
 import br.dev.allan.controlefinanceiro.data.local.mapper.toDomain
 import br.dev.allan.controlefinanceiro.data.local.mapper.toEntity
+import br.dev.allan.controlefinanceiro.data.remote.CreditCardRemoteDataSource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -13,7 +14,8 @@ import javax.inject.Singleton
 
 @Singleton
 class CreditCardRepositoryImpl @Inject constructor(
-    private val dao: CreditCardDao
+    private val dao: CreditCardDao,
+    private val remoteDataSource: CreditCardRemoteDataSource
 ) : CreditCardRepository {
 
     override fun getCards(): Flow<List<CreditCard>> =
@@ -25,14 +27,17 @@ class CreditCardRepositoryImpl @Inject constructor(
 
     override suspend fun updateCard(card: CreditCard) {
         dao.updateCard(card.toEntity())
+        remoteDataSource.saveCard(card)
     }
 
     override suspend fun addCard(card: CreditCard) {
         dao.insert(card.toEntity())
+        remoteDataSource.saveCard(card)
     }
 
     override suspend fun removeCard(id: String) {
         dao.deleteById(id)
+        remoteDataSource.deleteCard(id)
     }
 
 }

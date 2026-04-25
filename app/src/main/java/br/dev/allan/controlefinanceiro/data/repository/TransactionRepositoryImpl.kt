@@ -5,11 +5,11 @@ import br.dev.allan.controlefinanceiro.data.local.TransactionDao
 import br.dev.allan.controlefinanceiro.data.local.TransactionEntity
 import br.dev.allan.controlefinanceiro.data.local.mapper.toDomain
 import br.dev.allan.controlefinanceiro.data.local.mapper.toEntity
+import br.dev.allan.controlefinanceiro.data.remote.TransactionRemoteDataSource
 import br.dev.allan.controlefinanceiro.domain.model.CategorySum
 import br.dev.allan.controlefinanceiro.domain.model.Transaction
 import br.dev.allan.controlefinanceiro.domain.repository.TransactionRepository
 import br.dev.allan.controlefinanceiro.utils.DateHelper
-import br.dev.allan.controlefinanceiro.utils.constants.TransactionType
 import br.dev.allan.controlefinanceiro.utils.formatMillisToMonthYear
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -21,7 +21,8 @@ import java.util.Locale
 import javax.inject.Inject
 
 class TransactionRepositoryImpl @Inject constructor(
-    private val transactionDao: TransactionDao
+    private val transactionDao: TransactionDao,
+    private val remoteDataSource: TransactionRemoteDataSource
 ): TransactionRepository {
 
     override fun getTransactionsBetweenDates(startDate: Long, endDate: Long): Flow<List<TransactionEntity>> {
@@ -34,6 +35,7 @@ class TransactionRepositoryImpl @Inject constructor(
             monthYear = monthYear
         )
         transactionDao.markAsPaid(paymentStatus)
+        // Opcional: Sincronizar status de pagamento com remoto
     }
 
     override suspend fun markAsUnpaid(transactionId: String, monthYear: String) {
@@ -46,7 +48,7 @@ class TransactionRepositoryImpl @Inject constructor(
             transactionDao.getAllTransactions(),
             transactionDao.getAllPaymentStatuses()
         ) { transactions, payments ->
-            transactions.map { it.toDomain(payments, monthYear) } // Removido o viewedMonthMillis
+            transactions.map { it.toDomain(payments, monthYear) }
         }
     }
 
@@ -56,17 +58,15 @@ class TransactionRepositoryImpl @Inject constructor(
             transactionDao.getAllPaymentStatuses()
         ) { transactions, payments ->
             transactions.sumOf { entity ->
-                // O formato no banco é yyyy-MM-dd
                 val calendar = Calendar.getInstance().apply {
                     val dateObj = SimpleDateFormat("yyyy-MM-dd", Locale.US).parse(entity.date)
                     time = dateObj ?: Date()
                 }
                 
-                // O formatMillisToMonthYear usa "MM/yyyy"
                 val monthYear = formatMillisToMonthYear(calendar.timeInMillis)
                 
                 val isPaidInMonth = payments.any { 
-                    it.transactionId == entity.id.toString() && it.monthYear == monthYear 
+                    it.transactionId == entity.id && it.monthYear == monthYear
                 }
                 
                 if (!isPaidInMonth) entity.amount else 0.0
@@ -111,7 +111,7 @@ class TransactionRepositoryImpl @Inject constructor(
         return transactionDao.getTotalIncomesByMonth(startDateStr, endDateStr)
     }
 
-    override suspend fun updatePaymentStatus(id: Int, paid: Boolean) {
+    override suspend fun updatePaymentStatus(id: String, paid: Boolean) {
         transactionDao.updatePaymentStatus(id, paid)
     }
 
@@ -132,25 +132,34 @@ class TransactionRepositoryImpl @Inject constructor(
         return transactionDao.getAllPaymentStatuses()
     }
 
-    override suspend fun getTransactionById(id: Int): Transaction? {
+    override suspend fun getTransactionById(id: String): Transaction? {
         return transactionDao.getTransactionById(id)?.toDomain()
     }
 
-    override suspend fun deleteTransaction(id: Int) {
+    override suspend fun deleteTransaction(id: String) {
         transactionDao.deleteTransactionById(id)
+        remoteDataSource.deleteTransaction(id)
     }
 
-    override suspend fun insertTransaction(transaction: Transaction) =
+    override suspend fun insertTransaction(transaction: Transaction) {
         transactionDao.insertTransaction(transaction.toEntity())
+        remoteDataSource.saveTransaction(transaction)
+    }
 
     override suspend fun insertTransactions(transactions: List<Transaction>) {
         val entities = transactions.map { it.toEntity() }
         transactionDao.insertTransactions(entities)
+        remoteDataSource.syncTransactions(transactions)
     }
 
-    override suspend fun updateTransaction(transaction: Transaction) =
+    override suspend fun updateTransaction(transaction: Transaction) {
         transactionDao.updateTransaction(transaction.toEntity())
+        remoteDataSource.saveTransaction(transaction)
+    }
 
-    override suspend fun deleteTransaction(transaction: Transaction) =
+    override suspend fun deleteTransaction(transaction: Transaction) {
         transactionDao.deleteTransaction(transaction.toEntity())
+        remoteDataSource.deleteTransaction(transaction.id)
+    }
 }
+

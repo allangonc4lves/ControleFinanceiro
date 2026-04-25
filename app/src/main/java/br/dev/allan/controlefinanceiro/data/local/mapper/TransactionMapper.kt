@@ -79,8 +79,8 @@ fun Transaction.toUi(currencyManager: CurrencyManager, code: String): Transactio
     )
 }
 
-fun TransactionUIState.toDomain(amount: Double, dateForDb: String, id: Int = 0) = Transaction(
-    id = id,
+fun TransactionUIState.toDomain(amount: Double, dateForDb: String, id: String? = null) = Transaction(
+    id = id ?: java.util.UUID.randomUUID().toString(),
     title = this.title,
     amount = amount,
     date = dateForDb,

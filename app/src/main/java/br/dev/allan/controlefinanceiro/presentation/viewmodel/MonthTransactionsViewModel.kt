@@ -108,9 +108,9 @@ class MonthTransactionsViewModel @Inject constructor(
                 val monthYear = formatMillisToMonthYear(currentMonth.value)
 
                 if (uiModel.isPaid) {
-                    repository.markAsUnpaid(id.toString(), monthYear)
+                    repository.markAsUnpaid(id, monthYear)
                 } else {
-                    repository.markAsPaid(id.toString(), monthYear)
+                    repository.markAsPaid(id, monthYear)
                 }
             } else {
                 repository.updatePaymentStatus(id, !uiModel.isPaid)

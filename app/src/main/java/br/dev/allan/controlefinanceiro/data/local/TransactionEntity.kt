@@ -8,7 +8,7 @@ import br.dev.allan.controlefinanceiro.utils.constants.TransactionType
 
 @Entity(tableName = "transactions")
 data class TransactionEntity(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    @PrimaryKey val id: String,
     val groupId: String? = null,
     val title: String,
     val amount: Double,

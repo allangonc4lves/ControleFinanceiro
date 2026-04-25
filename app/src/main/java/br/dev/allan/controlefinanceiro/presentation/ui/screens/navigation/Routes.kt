@@ -6,10 +6,13 @@ import kotlinx.serialization.Serializable
 object HomeRoute
 
 @Serializable
+object LoginRoute
+
+@Serializable
 object TransactionsRoute
 
 @Serializable
-data class AddTransactionRoute(val id: Int? = null)
+data class AddTransactionRoute(val id: String? = null)
 
 @Serializable
 object ReportsRoute

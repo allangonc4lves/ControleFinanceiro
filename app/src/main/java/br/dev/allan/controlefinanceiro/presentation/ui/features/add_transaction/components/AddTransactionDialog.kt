@@ -59,7 +59,7 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTransactionDialog(
-    transactionId: Int? = null,
+    transactionId: String? = null,
     onDismiss: () -> Unit,
     viewModel: TransactionViewModel = hiltViewModel()
 ) {
@@ -76,7 +76,7 @@ fun AddTransactionDialog(
     }
 
     LaunchedEffect(transactionId) {
-        if (transactionId != null && transactionId != -1) {
+        if (transactionId != null) {
             viewModel.loadToEdit(transactionId)
         }
     }
@@ -134,8 +134,8 @@ fun AddTransactionDialog(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        CustomTextTitle(if (transactionId == null || transactionId == -1) stringResource(R.string.new_transaction) else stringResource(R.string.edit_transaction))
-                        if (transactionId != null && transactionId != -1) {
+                        CustomTextTitle(if (transactionId == null) stringResource(R.string.new_transaction) else stringResource(R.string.edit_transaction))
+                        if (transactionId != null) {
                             IconButton(onClick = { showDeleteConfirm = true }) {
                                 Icon(
                                     Icons.Default.Delete,

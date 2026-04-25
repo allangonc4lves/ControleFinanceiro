@@ -63,7 +63,19 @@ interface TransactionDao {
     fun getByCard(cardId: String): Flow<List<TransactionEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertTransaction(transaction: TransactionEntity): Long
+    suspend fun insertTransaction(transaction: TransactionEntity)
+
+    @Query("DELETE FROM transactions WHERE id = :id")
+    suspend fun deleteTransactionById(id: String)
+
+    @Query("UPDATE transactions SET isPaid = :paid WHERE id = :id")
+    suspend fun updatePaymentStatus(id: String, paid: Boolean)
+
+    @Query("SELECT * FROM transactions WHERE id = :id")
+    suspend fun getTransactionById(id: String): TransactionEntity?
+
+    @Query("SELECT * FROM transactions WHERE date BETWEEN :startDate AND :endDate ORDER BY date DESC")
+    fun getTransactionsBetweenDates(startDate: Long, endDate: Long): Flow<List<TransactionEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTransactions(transactions: List<TransactionEntity>)
@@ -74,14 +86,8 @@ interface TransactionDao {
     @Delete
     suspend fun deleteTransaction(transaction: TransactionEntity)
 
-    @Query("DELETE FROM transactions WHERE id = :id")
-    suspend fun deleteTransactionById(id: Int)
-
     @Query("DELETE FROM transactions WHERE groupId = :groupId")
     suspend fun deleteTransactionGroup(groupId: String)
-
-    @Query("UPDATE transactions SET isPaid = :paid WHERE id = :id")
-    suspend fun updatePaymentStatus(id: Int, paid: Boolean)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun markAsPaid(payment: PaymentStatusEntity)
@@ -91,10 +97,4 @@ interface TransactionDao {
 
     @Query("SELECT * FROM payment_status")
     fun getAllPaymentStatuses(): Flow<List<PaymentStatusEntity>>
-
-    @Query("SELECT * FROM transactions WHERE id = :id")
-    suspend fun getTransactionById(id: Int): TransactionEntity?
-
-    @Query("SELECT * FROM transactions WHERE date BETWEEN :startDate AND :endDate ORDER BY date DESC")
-    fun getTransactionsBetweenDates(startDate: Long, endDate: Long): Flow<List<TransactionEntity>>
 }

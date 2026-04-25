@@ -9,7 +9,7 @@ import java.util.Date
 import java.util.Locale
 
 data class Transaction(
-    val id: Int = 0,
+    val id: String = java.util.UUID.randomUUID().toString(),
     val groupId: String? = null,
     val title: String,
     val amount: Double,
