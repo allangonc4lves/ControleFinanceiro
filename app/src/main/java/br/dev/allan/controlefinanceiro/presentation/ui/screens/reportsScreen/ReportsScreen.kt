@@ -67,7 +67,7 @@ import br.dev.allan.controlefinanceiro.R
 import br.dev.allan.controlefinanceiro.utils.constants.TransactionCategory
 import br.dev.allan.controlefinanceiro.domain.model.getAppearance
 import br.dev.allan.controlefinanceiro.presentation.ui.components.CustomTextContent
-import br.dev.allan.controlefinanceiro.presentation.viewmodel.ReportItem
+import br.dev.allan.controlefinanceiro.presentation.ui.state.ReportItemUiModel
 import br.dev.allan.controlefinanceiro.presentation.viewmodel.ReportViewModel
 import br.dev.allan.controlefinanceiro.presentation.viewmodel.TransactionStatusFilter
 import br.dev.allan.controlefinanceiro.presentation.viewmodel.TransactionTypeFilter
@@ -84,7 +84,7 @@ fun ReportsScreen(
     val uiState by viewModel.reportUiState.collectAsStateWithLifecycle()
     val filterState by viewModel.filterState.collectAsStateWithLifecycle()
     val isBalanceVisible by viewModel.isBalanceVisible.collectAsStateWithLifecycle()
-    var selectedInvoice by remember { mutableStateOf<ReportItem.Invoice?>(null) }
+    var selectedInvoice by remember { mutableStateOf<ReportItemUiModel.Invoice?>(null) }
     val sheetState = rememberModalBottomSheetState()
     var showDatePicker by remember { mutableStateOf(false) }
     var showCategorySheet by remember { mutableStateOf(false) }
@@ -342,11 +342,11 @@ fun ReportsScreen(
             if (uiState.items.isNotEmpty()) {
                 uiState.items.forEachIndexed { index, item ->
                     when (item) {
-                        is ReportItem.Transaction -> {
+                        is ReportItemUiModel.Transaction -> {
                             val previousItem = if (index > 0) uiState.items[index - 1] else null
                             val showHeader = previousItem == null || 
-                                (previousItem is ReportItem.Transaction && previousItem.model.formattedDate != item.model.formattedDate) ||
-                                (previousItem is ReportItem.Invoice)
+                                (previousItem is ReportItemUiModel.Transaction && previousItem.model.formattedDate != item.model.formattedDate) ||
+                                (previousItem is ReportItemUiModel.Invoice)
                             if (showHeader) {
                                 item {
                                     DateHeader(dateMillis = item.model.dateMillis)
@@ -360,7 +360,7 @@ fun ReportsScreen(
                                 )
                             }
                         }
-                        is ReportItem.Invoice -> {
+                        is ReportItemUiModel.Invoice -> {
                             item {
                                 InvoiceItem(
                                     invoice = item,
@@ -608,7 +608,7 @@ fun SummaryCard(title: String, value: String, color: Color, modifier: Modifier =
 
 @Composable
 fun InvoiceItem(
-    invoice: ReportItem.Invoice,
+    invoice: ReportItemUiModel.Invoice,
     isAmountVisible: Boolean = true,
     onClick: () -> Unit
 ) {

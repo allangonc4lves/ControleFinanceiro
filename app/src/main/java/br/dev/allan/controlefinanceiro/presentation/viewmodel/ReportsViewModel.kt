@@ -1,19 +1,20 @@
 package br.dev.allan.controlefinanceiro.presentation.viewmodel
 
-import android.text.format.DateFormat
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import br.dev.allan.controlefinanceiro.data.dataStore.SettingsManager
-import br.dev.allan.controlefinanceiro.data.local.PaymentStatusEntity
 import br.dev.allan.controlefinanceiro.domain.model.CreditCard
-import br.dev.allan.controlefinanceiro.domain.model.Transaction
-import br.dev.allan.controlefinanceiro.utils.constants.TransactionDirection
+import br.dev.allan.controlefinanceiro.presentation.ui.state.ReportFilterState
+import br.dev.allan.controlefinanceiro.presentation.ui.state.ReportItemUiModel
+import br.dev.allan.controlefinanceiro.presentation.ui.state.ReportUiState
 import br.dev.allan.controlefinanceiro.presentation.ui.state.TransactionUIState
+import br.dev.allan.controlefinanceiro.data.local.mapper.toUi
+import br.dev.allan.controlefinanceiro.utils.constants.TransactionDirection
 import br.dev.allan.controlefinanceiro.domain.repository.CreditCardRepository
 import br.dev.allan.controlefinanceiro.domain.repository.TransactionRepository
+import br.dev.allan.controlefinanceiro.domain.usecase.GetReportUseCase
+import br.dev.allan.controlefinanceiro.domain.usecase.ReportData
 import br.dev.allan.controlefinanceiro.utils.CurrencyManager
-import br.dev.allan.controlefinanceiro.utils.DateHelper
 import br.dev.allan.controlefinanceiro.utils.formatMillisToMonthYear
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -27,48 +28,13 @@ import javax.inject.Inject
 enum class TransactionTypeFilter { ALL, INCOME, EXPENSE, INVOICES_ONLY, WALLET_ONLY }
 enum class TransactionStatusFilter { ALL, PAID, UNPAID }
 
-data class ReportFilterState(
-    val startDate: Long,
-    val endDate: Long,
-    val typeFilter: TransactionTypeFilter = TransactionTypeFilter.ALL,
-    val statusFilter: TransactionStatusFilter = TransactionStatusFilter.ALL,
-    val categoryFilter: String? = null
-)
-
-data class ReportUIState(
-    val items: List<ReportItem> = emptyList(),
-    val formattedTotalIncome: String = "",
-    val formattedTotalExpense: String = "",
-    val formattedBalance: String = "",
-    val isLoading: Boolean = false
-)
-
-sealed class ReportItem {
-    abstract val dateForSorting: Long
-
-    data class Transaction(
-        val model: TransactionUIState,
-        override val dateForSorting: Long
-    ) : ReportItem()
-
-    data class Invoice(
-        val cardId: String,
-        val cardName: String,
-        val monthYear: String,
-        val totalAmount: Double,
-        val formattedAmount: String,
-        val isPaid: Boolean,
-        val transactions: List<TransactionUIState>,
-        override val dateForSorting: Long
-    ) : ReportItem()
-}
-
 fun Double.round2() = Math.round(this * 100.0) / 100.0
 
 @HiltViewModel
 class ReportViewModel @Inject constructor(
     private val transactionRepository: TransactionRepository,
     private val cardRepository: CreditCardRepository,
+    private val getReportUseCase: GetReportUseCase,
     private val settingsManager: SettingsManager,
     private val currencyManager: CurrencyManager
 ) : ViewModel() {
@@ -87,102 +53,48 @@ class ReportViewModel @Inject constructor(
         _filterState,
         currencyCode,
         transactionRepository.getAllPaymentStatuses(),
-        cardRepository.getCards()
-    ) { filters, code, payments, cards ->
-        transactionRepository.getTransactions().map { allTransactions ->
-            processReportData(allTransactions, filters, code, payments, cards)
-        }
-    }.flatMapLatest { it }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ReportUIState(isLoading = true))
+        cardRepository.getCards(),
+        transactionRepository.getTransactions()
+    ) { filters, code, payments, cards, allTransactions ->
+        val reportData = getReportUseCase(allTransactions, filters, payments)
+        mapToUiState(reportData, filters, code, cards)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ReportUiState(isLoading = true))
 
-    private fun processReportData(
-        allTransactions: List<Transaction>,
+    private fun mapToUiState(
+        data: ReportData,
         filters: ReportFilterState,
         code: String,
-        payments: List<PaymentStatusEntity>,
         cards: List<CreditCard>
-    ): ReportUIState {
-        val reportItems = mutableListOf<ReportItem>()
+    ): ReportUiState {
+        val reportItems = mutableListOf<ReportItemUiModel>()
         val creditCardGroups = mutableMapOf<String, Pair<Long, MutableList<TransactionUIState>>>()
 
-        allTransactions.forEach { tx ->
-            if (filters.categoryFilter != null && tx.category.name != filters.categoryFilter) {
-                return@forEach
-            }
+        data.occurrences.forEach { occurrence ->
+            val tx = occurrence.transaction
+            val occurrenceDate = Date(occurrence.occurrenceDate)
+            val formattedDateOccur = SimpleDateFormat("dd/MM/yy", Locale.getDefault()).format(occurrenceDate)
+            
+            val uiModel = tx.toUi(currencyManager, code).copy(
+                amount = occurrence.amount,
+                dateMillis = occurrence.occurrenceDate,
+                formattedDate = formattedDateOccur,
+                formattedParcelInfo = if (tx.isInstallment || tx.installmentCount > 1) "${occurrence.currentParcel}/${tx.installmentCount}" else null,
+                isPaid = occurrence.isPaidInMonth,
+                formattedAmount = (if (tx.direction == TransactionDirection.EXPENSE) "- " else "+ ") + currencyManager.formatByCurrencyCode(occurrence.amount, code)
+            )
 
-            val occurrences = if (tx.creditCardId != null) {
-                val txMillis = SimpleDateFormat("yyyy-MM-dd", Locale.US).parse(tx.date)?.time
-                if (txMillis != null && txMillis in filters.startDate..filters.endDate) {
-                    listOf(txMillis)
-                } else {
-                    emptyList()
+            if (tx.creditCardId != null) {
+                val currentMonthYear = formatMillisToMonthYear(occurrence.occurrenceDate)
+                val key = "${tx.creditCardId}_$currentMonthYear"
+                if (!creditCardGroups.containsKey(key)) {
+                    creditCardGroups[key] = Pair(occurrence.occurrenceDate, mutableListOf())
                 }
+                creditCardGroups[key]?.second?.add(uiModel)
             } else {
-                getOccurrencesInRange(tx, filters.startDate, filters.endDate)
-            }
-
-            occurrences.forEach { occurrenceDate ->
-                val calOcc = Calendar.getInstance().apply { timeInMillis = occurrenceDate }
-                val currentMonthYear = formatMillisToMonthYear(calOcc.timeInMillis)
-
-                val isPaidInThisMonth = if (tx.creditCardId != null) {
-                    payments.any { it.transactionId == tx.id.toString() && it.monthYear == currentMonthYear }
-                } else {
-                    tx.isPaid
-                }
-
-                val matchesType = when (filters.typeFilter) {
-                    TransactionTypeFilter.ALL -> true
-                    TransactionTypeFilter.INCOME -> tx.direction == TransactionDirection.INCOME
-                    TransactionTypeFilter.EXPENSE -> tx.direction == TransactionDirection.EXPENSE
-                    TransactionTypeFilter.INVOICES_ONLY -> tx.creditCardId != null
-                    TransactionTypeFilter.WALLET_ONLY -> tx.creditCardId == null
-                }
-
-                val matchesStatus = when (filters.statusFilter) {
-                    TransactionStatusFilter.ALL -> true
-                    TransactionStatusFilter.PAID -> isPaidInThisMonth
-                    TransactionStatusFilter.UNPAID -> !isPaidInThisMonth
-                }
-
-                if (matchesType && matchesStatus) {
-                    val currentParcel = tx.getCurrentParcelIndex(occurrenceDate)
-                    val rawParcel = tx.amount
-                    val roundedParcel = Math.round(rawParcel * 100.0) / 100.0
-
-                    val datePattern = DateFormat.getBestDateTimePattern(Locale.getDefault(), "ddMM")
-                    val uiModel = TransactionUIState(
-                        id = tx.id,
-                        title = tx.title,
-                        amount = roundedParcel,
-                        formattedTotalAmount = currencyManager.formatByCurrencyCode(tx.amount, code),
-                        formattedAmount = currencyManager.formatByCurrencyCode(roundedParcel, code),
-                        formattedParcelInfo = if (tx.isInstallment) "$currentParcel/${tx.installmentCount}" else null,
-                        dateMillis = occurrenceDate,
-                        formattedDate = SimpleDateFormat(datePattern, Locale.getDefault()).format(Date(occurrenceDate)),
-                        color = if (tx.direction == TransactionDirection.EXPENSE) Color.Red else Color.Green,
-                        category = tx.category,
-                        type = tx.type,
-                        direction = tx.direction,
-                        isPaid = isPaidInThisMonth,
-                        isInstallment = tx.isInstallment,
-                        currentInstallment = tx.currentInstallment,
-                        installmentCount = tx.installmentCount,
-                        creditCardId = tx.creditCardId,
-                    )
-
-                    if (tx.creditCardId != null) {
-                        if (filters.typeFilter != TransactionTypeFilter.WALLET_ONLY) {
-                            val key = "${tx.creditCardId}_$currentMonthYear"
-                            if (!creditCardGroups.containsKey(key)) creditCardGroups[key] = Pair(occurrenceDate, mutableListOf())
-                            creditCardGroups[key]?.second?.add(uiModel)
-                        }
-                    } else if (filters.typeFilter != TransactionTypeFilter.INVOICES_ONLY) {
-                        reportItems.add(ReportItem.Transaction(uiModel, occurrenceDate))
-                    }
-                }
+                reportItems.add(ReportItemUiModel.Transaction(uiModel, occurrence.occurrenceDate))
             }
         }
+
         creditCardGroups.forEach { (key, groupData) ->
             val dateSort = groupData.first
             val txs = groupData.second
@@ -192,7 +104,7 @@ class ReportViewModel @Inject constructor(
             val cardInfo = cards.find { it.id == cardId }
             val displayName = cardInfo?.let { "${it.bankName} (${it.brand})" } ?: "Cartão Removido"
 
-            reportItems.add(ReportItem.Invoice(
+            reportItems.add(ReportItemUiModel.Invoice(
                 cardId = cardId,
                 cardName = displayName,
                 monthYear = key.split("_")[1],
@@ -204,25 +116,11 @@ class ReportViewModel @Inject constructor(
             ))
         }
 
-        val totalIncome = reportItems
-            .filterIsInstance<ReportItem.Transaction>()
-            .filter { it.model.direction == TransactionDirection.INCOME }
-            .sumOf { it.model.amount }
-
-        val totalExpense = reportItems.sumOf { item ->
-            when (item) {
-                is ReportItem.Transaction -> {
-                    if (item.model.direction == TransactionDirection.EXPENSE) item.model.amount else 0.0
-                }
-                is ReportItem.Invoice -> item.totalAmount
-            }
-        }
-
-        return ReportUIState(
+        return ReportUiState(
             items = reportItems.sortedByDescending { it.dateForSorting },
-            formattedTotalIncome = currencyManager.formatByCurrencyCode(totalIncome, code),
-            formattedTotalExpense = currencyManager.formatByCurrencyCode(totalExpense, code),
-            formattedBalance = currencyManager.formatByCurrencyCode(totalIncome - totalExpense, code),
+            formattedTotalIncome = currencyManager.formatByCurrencyCode(data.totalIncome, code),
+            formattedTotalExpense = currencyManager.formatByCurrencyCode(data.totalExpense, code),
+            formattedBalance = currencyManager.formatByCurrencyCode(data.totalIncome - data.totalExpense, code),
             isLoading = false
         )
     }
@@ -238,37 +136,6 @@ class ReportViewModel @Inject constructor(
         cal.add(Calendar.MONTH, 1)
         cal.add(Calendar.MILLISECOND, -1)
         return ReportFilterState(startDate = start, endDate = cal.timeInMillis)
-    }
-
-    private fun getOccurrencesInRange(tx: Transaction, start: Long, end: Long): List<Long> {
-        val dates = mutableListOf<Long>()
-        val startStr = DateHelper.fromMillisToDb(start)
-        val endStr = DateHelper.fromMillisToDb(end)
-        val calTx = Calendar.getInstance().apply {
-            val dateObj = SimpleDateFormat("yyyy-MM-dd", Locale.US).parse(tx.date)
-            time = dateObj ?: Date()
-        }
-
-        when {
-            tx.isInstallment -> {
-                for (i in 0 until tx.installmentCount) {
-                    val calParcel = (calTx.clone() as Calendar).apply {
-                        add(Calendar.MONTH, i)
-                    }
-                    val parcelMillis = calParcel.timeInMillis
-                    if (parcelMillis in start..end) {
-                        dates.add(parcelMillis)
-                    }
-                }
-            }
-            else -> {
-                if (tx.date in startStr..endStr) {
-                    val txMillis = SimpleDateFormat("yyyy-MM-dd", Locale.US).parse(tx.date)?.time
-                    txMillis?.let { dates.add(it) }
-                }
-            }
-        }
-        return dates
     }
 
     fun updateCategoryFilter(categoryName: String?) {
