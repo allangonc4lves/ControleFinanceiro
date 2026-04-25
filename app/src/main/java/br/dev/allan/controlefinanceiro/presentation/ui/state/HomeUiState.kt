@@ -1,7 +1,6 @@
-package br.dev.allan.controlefinanceiro.presentation.ui.screens.state
+package br.dev.allan.controlefinanceiro.presentation.ui.state
 
 import br.dev.allan.controlefinanceiro.domain.model.CategoryAppearance
-import br.dev.allan.controlefinanceiro.utils.TransactionUIModel
 
 data class HomeUiState(
     val balance: String = "...",
@@ -13,7 +12,7 @@ data class HomeUiState(
     val paidValue: String = "...",
     val pendingValue: String = "...",
     val isBalanceVisible: Boolean = true,
-    val transactions: List<TransactionUIModel> = emptyList(),
+    val transactions: List<TransactionUIState> = emptyList(),
     val chartDataValues: Map<CategoryAppearance, Double> = emptyMap(),
     val chartDataLabels: Map<CategoryAppearance, String> = emptyMap()
 )

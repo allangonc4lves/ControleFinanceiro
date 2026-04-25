@@ -9,7 +9,7 @@ import br.dev.allan.controlefinanceiro.data.local.PaymentStatusEntity
 import br.dev.allan.controlefinanceiro.domain.model.CreditCard
 import br.dev.allan.controlefinanceiro.domain.model.Transaction
 import br.dev.allan.controlefinanceiro.utils.constants.TransactionDirection
-import br.dev.allan.controlefinanceiro.utils.TransactionUIModel
+import br.dev.allan.controlefinanceiro.presentation.ui.state.TransactionUIState
 import br.dev.allan.controlefinanceiro.domain.repository.CreditCardRepository
 import br.dev.allan.controlefinanceiro.domain.repository.TransactionRepository
 import br.dev.allan.controlefinanceiro.utils.CurrencyManager
@@ -47,7 +47,7 @@ sealed class ReportItem {
     abstract val dateForSorting: Long
 
     data class Transaction(
-        val model: TransactionUIModel,
+        val model: TransactionUIState,
         override val dateForSorting: Long
     ) : ReportItem()
 
@@ -58,7 +58,7 @@ sealed class ReportItem {
         val totalAmount: Double,
         val formattedAmount: String,
         val isPaid: Boolean,
-        val transactions: List<TransactionUIModel>,
+        val transactions: List<TransactionUIState>,
         override val dateForSorting: Long
     ) : ReportItem()
 }
@@ -103,7 +103,7 @@ class ReportViewModel @Inject constructor(
         cards: List<CreditCard>
     ): ReportUIState {
         val reportItems = mutableListOf<ReportItem>()
-        val creditCardGroups = mutableMapOf<String, Pair<Long, MutableList<TransactionUIModel>>>()
+        val creditCardGroups = mutableMapOf<String, Pair<Long, MutableList<TransactionUIState>>>()
 
         allTransactions.forEach { tx ->
             if (filters.categoryFilter != null && tx.category.name != filters.categoryFilter) {
@@ -151,7 +151,7 @@ class ReportViewModel @Inject constructor(
                     val roundedParcel = Math.round(rawParcel * 100.0) / 100.0
 
                     val datePattern = DateFormat.getBestDateTimePattern(Locale.getDefault(), "ddMM")
-                    val uiModel = TransactionUIModel(
+                    val uiModel = TransactionUIState(
                         id = tx.id,
                         title = tx.title,
                         amount = roundedParcel,

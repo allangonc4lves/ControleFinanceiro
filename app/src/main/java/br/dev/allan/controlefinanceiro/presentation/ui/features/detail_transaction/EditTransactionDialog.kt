@@ -23,26 +23,24 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import br.dev.allan.controlefinanceiro.R
-import br.dev.allan.controlefinanceiro.utils.TransactionUIModel
+import br.dev.allan.controlefinanceiro.presentation.ui.state.TransactionUIState
 
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.sp
 import br.dev.allan.controlefinanceiro.utils.constants.TransactionDirection
 import br.dev.allan.controlefinanceiro.utils.constants.TransactionType
 
 @Composable
 fun EditTransactionDialog(
-    transaction: TransactionUIModel,
+    transaction: TransactionUIState,
     totalIncome: Double,
     totalPaidExpenses: Double,
     onDismiss: () -> Unit,
-    onConfirm: (TransactionUIModel, Boolean) -> Unit
+    onConfirm: (TransactionUIState, Boolean) -> Unit
 ) {
     var title by remember { mutableStateOf(transaction.title) }
     var amountStr by remember { mutableStateOf(transaction.amount.toString()) }

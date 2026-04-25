@@ -1,9 +1,8 @@
 package br.dev.allan.controlefinanceiro.domain.usecase
 
-import br.dev.allan.controlefinanceiro.R
 import br.dev.allan.controlefinanceiro.domain.model.Transaction
 import br.dev.allan.controlefinanceiro.domain.repository.TransactionRepository
-import br.dev.allan.controlefinanceiro.utils.TransactionUIModel
+import br.dev.allan.controlefinanceiro.presentation.ui.state.TransactionUIState
 import br.dev.allan.controlefinanceiro.utils.DateHelper
 import br.dev.allan.controlefinanceiro.utils.ValidateAmount
 import br.dev.allan.controlefinanceiro.utils.ValidateCategory
@@ -22,7 +21,7 @@ class SaveTransactionUseCase @Inject constructor(
     val validateAmount: ValidateAmount,
     val validateCategory: ValidateCategory
 ) {
-    suspend fun execute(state: TransactionUIModel, id: Int?): Result<Unit> {
+    suspend fun execute(state: TransactionUIState, id: Int?): Result<Unit> {
         val titleRes = validateText.execute(state.title)
         val amountRes = validateAmount.execute(state.amountInput)
         val catRes = validateCategory.execute(state.category)
@@ -52,7 +51,7 @@ class SaveTransactionUseCase @Inject constructor(
     }
 
     private fun generateInstallments(
-        state: TransactionUIModel,
+        state: TransactionUIState,
         total: Double,
         baseDate: String
     ): List<Transaction> {
@@ -80,7 +79,7 @@ class SaveTransactionUseCase @Inject constructor(
     }
 }
 
-private fun TransactionUIModel.toDomain(amount: Double, dateForDb: String, id: Int = 0) = Transaction(
+private fun TransactionUIState.toDomain(amount: Double, dateForDb: String, id: Int = 0) = Transaction(
     id = id,
     title = this.title,
     amount = amount,

@@ -1,19 +1,12 @@
 package br.dev.allan.controlefinanceiro.presentation.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import br.dev.allan.controlefinanceiro.domain.model.Transaction
-import br.dev.allan.controlefinanceiro.utils.constants.TransactionCategory
-import br.dev.allan.controlefinanceiro.utils.constants.TransactionDirection
 import br.dev.allan.controlefinanceiro.utils.constants.TransactionType
 import br.dev.allan.controlefinanceiro.domain.repository.CreditCardRepository
 import br.dev.allan.controlefinanceiro.domain.repository.TransactionRepository
 import br.dev.allan.controlefinanceiro.domain.usecase.SaveTransactionUseCase
-import br.dev.allan.controlefinanceiro.utils.ValidateAmount
-import br.dev.allan.controlefinanceiro.utils.ValidateCategory
-import br.dev.allan.controlefinanceiro.utils.ValidateText
-import br.dev.allan.controlefinanceiro.utils.TransactionUIModel
+import br.dev.allan.controlefinanceiro.presentation.ui.state.TransactionUIState
 import br.dev.allan.controlefinanceiro.presentation.ui.features.add_transaction.SaveTransactionUiEvent
 import br.dev.allan.controlefinanceiro.presentation.ui.features.add_transaction.TransactionAction
 import br.dev.allan.controlefinanceiro.utils.DateHelper
@@ -22,17 +15,13 @@ import br.dev.allan.controlefinanceiro.utils.formatAsCurrency
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.text.DecimalFormat
-import java.text.DecimalFormatSymbols
 import java.text.SimpleDateFormat
 import java.util.Locale
 import javax.inject.Inject
-import kotlin.text.replace
 
 @HiltViewModel
 class TransactionViewModel @Inject constructor(
@@ -42,7 +31,7 @@ class TransactionViewModel @Inject constructor(
 ) : ViewModel() {
 
     private var currentId: Int? = null
-    private val _uiState = MutableStateFlow(TransactionUIModel())
+    private val _uiState = MutableStateFlow(TransactionUIState())
     val uiState = _uiState.asStateFlow()
 
     private val _uiEvent = Channel<SaveTransactionUiEvent>()
@@ -137,7 +126,7 @@ class TransactionViewModel @Inject constructor(
         }
     }
 
-    fun updateState(transform: (TransactionUIModel) -> TransactionUIModel) {
+    fun updateState(transform: (TransactionUIState) -> TransactionUIState) {
         _uiState.update(transform)
     }
 
@@ -165,7 +154,7 @@ class TransactionViewModel @Inject constructor(
     fun resetState() {
         val currentCards = _uiState.value.cards
         currentId = null
-        _uiState.value = TransactionUIModel(cards = currentCards)
+        _uiState.value = TransactionUIState(cards = currentCards)
     }
 
 }

@@ -1,4 +1,4 @@
-package br.dev.allan.controlefinanceiro.utils
+package br.dev.allan.controlefinanceiro.presentation.ui.state
 
 import androidx.compose.ui.graphics.Color
 import br.dev.allan.controlefinanceiro.domain.model.CreditCard
@@ -9,12 +9,12 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-data class TransactionUIModel(
+data class TransactionUIState(
     val id: Int = 0,
     val groupId: String? = null,
     val title: String = "",
     val amount: Double = 0.0,
-    val amountInput: String = "", // Usado para entrada de texto formatada
+    val amountInput: String = "",
     val dateDisplay: String = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()),
     val dateMillis: Long = System.currentTimeMillis(),
     val formattedTotalAmount: String = "",

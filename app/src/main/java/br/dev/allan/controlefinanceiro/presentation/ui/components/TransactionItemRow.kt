@@ -27,7 +27,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import br.dev.allan.controlefinanceiro.domain.model.getAppearance
-import br.dev.allan.controlefinanceiro.utils.TransactionUIModel
+import br.dev.allan.controlefinanceiro.presentation.ui.state.TransactionUIState
 import br.dev.allan.controlefinanceiro.utils.constants.TransactionDirection
 
 import androidx.compose.ui.res.stringResource
@@ -35,7 +35,7 @@ import br.dev.allan.controlefinanceiro.R
 
 @Composable
 fun TransactionItemRow(
-    uiModel: TransactionUIModel,
+    uiModel: TransactionUIState,
     isAmountVisible: Boolean = true,
     onClick: () -> Unit = {},
     onTogglePayment: (() -> Unit)? = null

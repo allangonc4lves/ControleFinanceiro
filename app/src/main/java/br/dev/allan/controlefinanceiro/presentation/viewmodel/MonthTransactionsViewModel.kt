@@ -1,7 +1,5 @@
 package br.dev.allan.controlefinanceiro.presentation.viewmodel
 
-import android.text.format.DateFormat
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import br.dev.allan.controlefinanceiro.data.local.mapper.toUi
@@ -9,8 +7,7 @@ import br.dev.allan.controlefinanceiro.domain.repository.CreditCardRepository
 import br.dev.allan.controlefinanceiro.utils.constants.TransactionDirection
 import kotlinx.coroutines.flow.first
 import br.dev.allan.controlefinanceiro.utils.constants.TransactionType
-import br.dev.allan.controlefinanceiro.domain.model.Transaction
-import br.dev.allan.controlefinanceiro.utils.TransactionUIModel
+import br.dev.allan.controlefinanceiro.presentation.ui.state.TransactionUIState
 import br.dev.allan.controlefinanceiro.domain.repository.TransactionRepository
 import br.dev.allan.controlefinanceiro.utils.CurrencyManager
 import br.dev.allan.controlefinanceiro.utils.DateHelper
@@ -26,10 +23,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
 import java.util.Calendar
-import java.util.Date
-import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
@@ -54,7 +48,7 @@ class MonthTransactionsViewModel @Inject constructor(
     val currentMonth = _currentMonth.asStateFlow()
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val transactionsUiModel: StateFlow<List<TransactionUIModel>> = kotlinx.coroutines.flow.combine(
+    val transactionsUiModel: StateFlow<List<TransactionUIState>> = kotlinx.coroutines.flow.combine(
         _currentMonth,
         currencyCode
     ) { monthMillis, code ->
@@ -81,7 +75,7 @@ class MonthTransactionsViewModel @Inject constructor(
     private val _uiEvent = kotlinx.coroutines.channels.Channel<String>()
     val uiEvent = _uiEvent.receiveAsFlow()
 
-    fun togglePayment(uiModel: TransactionUIModel) {
+    fun togglePayment(uiModel: TransactionUIState) {
         viewModelScope.launch {
             val id = uiModel.id
 
@@ -124,7 +118,7 @@ class MonthTransactionsViewModel @Inject constructor(
         }
     }
 
-    fun updateTransaction(updated: TransactionUIModel, editAll: Boolean) {
+    fun updateTransaction(updated: TransactionUIState, editAll: Boolean) {
         viewModelScope.launch {
             val original = repository.getTransactionById(updated.id) ?: return@launch
             

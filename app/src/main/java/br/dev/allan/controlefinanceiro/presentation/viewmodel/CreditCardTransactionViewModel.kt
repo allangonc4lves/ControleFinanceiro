@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import br.dev.allan.controlefinanceiro.data.dataStore.SettingsManager
 import br.dev.allan.controlefinanceiro.utils.constants.TransactionDirection
-import br.dev.allan.controlefinanceiro.utils.TransactionUIModel
+import br.dev.allan.controlefinanceiro.presentation.ui.state.TransactionUIState
 import br.dev.allan.controlefinanceiro.domain.repository.CreditCardRepository
 import br.dev.allan.controlefinanceiro.domain.repository.TransactionRepository
 import br.dev.allan.controlefinanceiro.domain.model.CreditCardAmountByYear
@@ -62,7 +62,7 @@ class CreditCardTransactionViewModel @Inject constructor(
         val monthYear = SimpleDateFormat("MM-yyyy", Locale.getDefault()).format(Date(monthMillis))
         Triple(cardId, monthYear, code)
     }.flatMapLatest { (cardId, monthYear, code) ->
-        if (cardId == null) return@flatMapLatest flowOf(emptyList<TransactionUIModel>())
+        if (cardId == null) return@flatMapLatest flowOf(emptyList<TransactionUIState>())
 
         transactionRepository.getCreditCardTransactions(monthYear).map { allTransactions ->
             val calendar = Calendar.getInstance().apply { timeInMillis = _currentMonth.value }
@@ -85,7 +85,7 @@ class CreditCardTransactionViewModel @Inject constructor(
                         Date()
                     }
 
-                    TransactionUIModel(
+                    TransactionUIState(
                         id = transaction.id,
                         title = transaction.title,
                         formattedParcelInfo = if (transaction.isInstallment) {

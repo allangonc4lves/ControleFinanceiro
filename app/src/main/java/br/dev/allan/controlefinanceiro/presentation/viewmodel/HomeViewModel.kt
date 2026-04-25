@@ -12,7 +12,7 @@ import br.dev.allan.controlefinanceiro.utils.constants.TransactionDirection
 import br.dev.allan.controlefinanceiro.domain.repository.TransactionRepository
 import br.dev.allan.controlefinanceiro.domain.model.getAppearance
 import br.dev.allan.controlefinanceiro.domain.usecase.GetMonthlyTransactionsUseCase
-import br.dev.allan.controlefinanceiro.presentation.ui.screens.state.HomeUiState
+import br.dev.allan.controlefinanceiro.presentation.ui.state.HomeUiState
 import br.dev.allan.controlefinanceiro.utils.CurrencyManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
@@ -47,10 +47,19 @@ class HomeViewModel @Inject constructor(
         val monthYearDbStr = month.format(java.time.format.DateTimeFormatter.ofPattern("MM-yyyy"))
 
         val monthlyTransactions = getMonthlyTransactionsUseCase(allTransactions, month).map { tx ->
-            val isPaidInMonth = payments.any {
-                it.transactionId == tx.id.toString() && (it.monthYear == monthYearStr || it.monthYear == monthYearDbStr)
+            val calendar = java.util.Calendar.getInstance().apply {
+                val dateObj = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).parse(tx.date)
+                time = dateObj ?: java.util.Date()
             }
-            tx.copy(isPaid = tx.isPaid || isPaidInMonth)
+            // Usa o helper padronizado para MM/yyyy
+            val currentMonthYear = br.dev.allan.controlefinanceiro.utils.formatMillisToMonthYear(calendar.timeInMillis)
+
+            val isPaidInMonth = if (tx.creditCardId != null) {
+                payments.any { it.transactionId == tx.id.toString() && it.monthYear == currentMonthYear }
+            } else {
+                tx.isPaid
+            }
+            tx.copy(isPaid = isPaidInMonth)
         }
 
         val incomeVal = monthlyTransactions

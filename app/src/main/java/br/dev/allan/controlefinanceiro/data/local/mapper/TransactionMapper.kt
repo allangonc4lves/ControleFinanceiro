@@ -1,12 +1,11 @@
 package br.dev.allan.controlefinanceiro.data.local.mapper
 
-import android.util.Log
 import androidx.compose.ui.graphics.Color
 import br.dev.allan.controlefinanceiro.data.local.PaymentStatusEntity
 import br.dev.allan.controlefinanceiro.data.local.TransactionEntity
 import br.dev.allan.controlefinanceiro.domain.model.Transaction
 import br.dev.allan.controlefinanceiro.utils.CurrencyManager
-import br.dev.allan.controlefinanceiro.utils.TransactionUIModel
+import br.dev.allan.controlefinanceiro.presentation.ui.state.TransactionUIState
 import br.dev.allan.controlefinanceiro.utils.constants.TransactionDirection
 import br.dev.allan.controlefinanceiro.utils.constants.TransactionType
 import java.text.SimpleDateFormat
@@ -50,7 +49,7 @@ fun Transaction.toEntity(): TransactionEntity {
     )
 }
 
-fun Transaction.toUi(currencyManager: CurrencyManager, code: String): TransactionUIModel {
+fun Transaction.toUi(currencyManager: CurrencyManager, code: String): TransactionUIState {
     val prefix = if (direction == TransactionDirection.EXPENSE) "- " else "+ "
 
     val dateObj = try {
@@ -59,7 +58,7 @@ fun Transaction.toUi(currencyManager: CurrencyManager, code: String): Transactio
         Date()
     }
 
-    return TransactionUIModel(
+    return TransactionUIState(
         id = id,
         title = title,
         amount = amount,
@@ -80,7 +79,7 @@ fun Transaction.toUi(currencyManager: CurrencyManager, code: String): Transactio
     )
 }
 
-fun TransactionUIModel.toDomain(amount: Double, dateForDb: String, id: Int = 0) = Transaction(
+fun TransactionUIState.toDomain(amount: Double, dateForDb: String, id: Int = 0) = Transaction(
     id = id,
     title = this.title,
     amount = amount,

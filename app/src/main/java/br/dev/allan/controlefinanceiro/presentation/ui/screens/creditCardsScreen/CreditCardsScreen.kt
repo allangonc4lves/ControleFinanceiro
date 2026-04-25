@@ -58,7 +58,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import br.dev.allan.controlefinanceiro.R
 import br.dev.allan.controlefinanceiro.domain.model.CreditCardAmountByYear
-import br.dev.allan.controlefinanceiro.utils.TransactionUIModel
+import br.dev.allan.controlefinanceiro.presentation.ui.state.TransactionUIState
 import br.dev.allan.controlefinanceiro.presentation.ui.components.CreditCardPreview
 import br.dev.allan.controlefinanceiro.presentation.ui.components.CustomTextContent
 import br.dev.allan.controlefinanceiro.presentation.ui.components.CustomTextTitle
@@ -214,7 +214,7 @@ fun CreditCardsScreen(
 }
 
 @Composable
-fun CardTransactionItem(item: TransactionUIModel) {
+fun CardTransactionItem(item: TransactionUIState) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier
