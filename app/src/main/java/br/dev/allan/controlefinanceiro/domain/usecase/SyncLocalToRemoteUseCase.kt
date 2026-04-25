@@ -16,13 +16,11 @@ class SyncLocalToRemoteUseCase @Inject constructor(
     private val creditCardRemoteDataSource: CreditCardRemoteDataSource
 ) {
     suspend operator fun invoke() = withContext(Dispatchers.IO) {
-        // Sincroniza Cartões
         val localCards = creditCardRepository.getCards().first()
         localCards.forEach { card ->
             creditCardRemoteDataSource.saveCard(card)
         }
 
-        // Sincroniza Transações
         val localTransactions = transactionRepository.getTransactions().first()
         if (localTransactions.isNotEmpty()) {
             transactionRemoteDataSource.syncTransactions(localTransactions)

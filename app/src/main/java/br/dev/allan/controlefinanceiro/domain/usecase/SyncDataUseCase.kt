@@ -24,7 +24,6 @@ class SyncDataUseCase @Inject constructor(
         val remoteTransactions = transactionsDef.await().map { it.toDomain() }
         val remoteCards = cardsDef.await().map { it.toDomain() }
 
-        // Salva no banco local (Room) - o onConflictStrategy.REPLACE cuidará da desduplicação
         remoteCards.forEach { creditCardRepository.addCard(it) }
         remoteTransactions.forEach { transactionRepository.insertTransaction(it) }
     }

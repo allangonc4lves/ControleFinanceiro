@@ -57,7 +57,6 @@ class LoginViewModel @Inject constructor(
                     onSuccess()
                 } else {
                     android.util.Log.w("LoginDebug", "Credencial obtida NÃO é GoogleIdTokenCredential. Tipo real: ${credential.type}")
-                    // Tentativa de conversão manual caso o 'is' falhe por questões de Proguard/Classloader
                     try {
                         val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
                         android.util.Log.d("LoginDebug", "Conversão manual para GoogleIdTokenCredential funcionou!")
@@ -71,7 +70,6 @@ class LoginViewModel @Inject constructor(
                     }
                 }
             } catch (e: GetCredentialException) {
-                // Aqui o erro "No credentials available" será capturado
                 android.util.Log.e("LoginError", "Erro CredentialManager (Tipo: ${e.type}): ${e.message}")
                 if (e.message?.contains("No credentials available") == true) {
                     android.util.Log.e("LoginError", "DICA: Verifique se o SHA-1 está no Firebase e se o Web Client ID está correto.")
@@ -82,11 +80,16 @@ class LoginViewModel @Inject constructor(
         }
     }
     
-    fun logout(context: Context) {
+    fun logout(context: Context, onLogoutSuccess: () -> Unit = {}) {
         viewModelScope.launch {
-            auth.signOut()
-            val credentialManager = CredentialManager.create(context)
-            credentialManager.clearCredentialState(ClearCredentialStateRequest())
+            try {
+                auth.signOut()
+                val credentialManager = CredentialManager.create(context)
+                credentialManager.clearCredentialState(ClearCredentialStateRequest())
+                onLogoutSuccess()
+            } catch (e: Exception) {
+                // Log error if needed
+            }
         }
     }
     

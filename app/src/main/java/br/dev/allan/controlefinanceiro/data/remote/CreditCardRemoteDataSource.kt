@@ -5,6 +5,9 @@ import br.dev.allan.controlefinanceiro.data.remote.model.CreditCardDto
 import br.dev.allan.controlefinanceiro.domain.model.CreditCard
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.snapshots
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
@@ -13,6 +16,16 @@ class CreditCardRemoteDataSource @Inject constructor(
     private val auth: FirebaseAuth
 ) {
     private val collectionPath = "credit_cards"
+
+    fun observeCards(): Flow<List<CreditCardDto>> {
+        val userId = auth.currentUser?.uid ?: return kotlinx.coroutines.flow.emptyFlow()
+        return firestore.collection(collectionPath)
+            .whereEqualTo("userId", userId)
+            .snapshots()
+            .map { snapshot ->
+                snapshot.toObjects(CreditCardDto::class.java)
+            }
+    }
 
     suspend fun saveCard(card: CreditCard) {
         val userId = auth.currentUser?.uid ?: return

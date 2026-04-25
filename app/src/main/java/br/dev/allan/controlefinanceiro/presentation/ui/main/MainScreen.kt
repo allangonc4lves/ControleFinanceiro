@@ -12,32 +12,50 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.compose.ui.platform.LocalContext
 import br.dev.allan.controlefinanceiro.presentation.ui.main.components.ZenoBottomAppBar
 import br.dev.allan.controlefinanceiro.presentation.ui.components.FabBottomBar
 import br.dev.allan.controlefinanceiro.presentation.ui.main.components.ZenoTopBar
 import br.dev.allan.controlefinanceiro.presentation.ui.screens.navigation.NavHost
+import androidx.navigation.NavDestination.Companion.hasRoute
+import br.dev.allan.controlefinanceiro.presentation.ui.screens.navigation.LoginRoute
+import br.dev.allan.controlefinanceiro.presentation.viewmodel.LoginViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen() {
+fun MainScreen(
+    loginViewModel: LoginViewModel = hiltViewModel()
+) {
     val navController = rememberNavController()
+    val context = LocalContext.current
 
     var showSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState()
 
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = currentBackStackEntry?.destination?.route
+    val currentDestination = currentBackStackEntry?.destination
+    val currentRoute = currentDestination?.route
+
+    val showBars = currentDestination?.hasRoute<LoginRoute>() == false
 
     Scaffold(
-        topBar = { ZenoTopBar(onProfileClick = { showSheet = true }) },
-        bottomBar = {
-            ZenoBottomAppBar(navController = navController)
-
+        topBar = {
+            if (showBars) {
+                ZenoTopBar(onProfileClick = { showSheet = true })
+            }
         },
-        floatingActionButton = { FabBottomBar(currentRoute = currentRoute, navController = navController) },
+        bottomBar = {
+            if (showBars) {
+                ZenoBottomAppBar(navController = navController)
+            }
+        },
+        floatingActionButton = {
+            if (showBars) {
+                FabBottomBar(currentRoute = currentRoute, navController = navController)
+            }
+        },
         floatingActionButtonPosition = FabPosition.Center,
     ) { innerPadding ->
         NavHost(navController, innerPadding)
@@ -49,7 +67,14 @@ fun MainScreen() {
         ) {
             ProfileSheetContent(
                 viewModel = hiltViewModel(),
-                onClose = { showSheet = false }
+                loginViewModel = loginViewModel,
+                onClose = { showSheet = false },
+                onLogout = {
+                    showSheet = false
+                    navController.navigate(LoginRoute) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
             )
         }
     }

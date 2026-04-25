@@ -51,7 +51,6 @@ class HomeViewModel @Inject constructor(
                 val dateObj = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).parse(tx.date)
                 time = dateObj ?: java.util.Date()
             }
-            // Usa o helper padronizado para MM/yyyy
             val currentMonthYear = br.dev.allan.controlefinanceiro.utils.formatMillisToMonthYear(calendar.timeInMillis)
 
             val isPaidInMonth = if (tx.creditCardId != null) {

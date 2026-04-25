@@ -95,6 +95,14 @@
     <string name="amount_validation_error">Insira um valor válido maior que zero</string>
     <string name="card_last_digits_error">O campo deve conter exatamente 4 números</string>
     <string name="settings">Configurações</string>
+    <string name="main_currency">Moeda Principal</string>
+    <string name="change_system_currency">Alterar a moeda do sistema</string>
+    <string name="logout">Sair da Conta</string>
+    <string name="logout_description">Deslogar do aplicativo</string>
+    <string name="back">Voltar</string>
+    <string name="select_currency">Selecionar Moeda</string>
+    <string name="user_default">Usuário</string>
+    <string name="no_email">Sem e-mail</string>
     <string name="select_main_currency">Selecione a moeda principal</string>
     <string name="brazilian_real">Real Brasileiro</string>
     <string name="us_dollar">Dólar Americano</string>
@@ -147,4 +155,7 @@
     <string name="cat_grants">Subsídios e Bolsas</string>
     <string name="cat_sales">Vendas</string>
     <string name="cat_others_income">Outras Receitas</string>
+    <string name="welcome_to_zeno">Bem-vindo ao Zeno</string>
+    <string name="login_with_google">Entrar com Google</string>
+    <string name="developed_by">Desenvolvido por Allan Gonçalves</string>
 </resources>

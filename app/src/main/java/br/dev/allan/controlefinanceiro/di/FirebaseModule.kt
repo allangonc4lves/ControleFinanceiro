@@ -18,8 +18,7 @@ object FirebaseModule {
     @Singleton
     fun provideFirestore(): FirebaseFirestore {
         val firestore = FirebaseFirestore.getInstance()
-        
-        // Habilitar cache offline explícito (Firestore já faz por padrão no Android, mas garantimos aqui)
+
         val settings = FirebaseFirestoreSettings.Builder()
             .setLocalCacheSettings(PersistentCacheSettings.newBuilder().build())
             .build()

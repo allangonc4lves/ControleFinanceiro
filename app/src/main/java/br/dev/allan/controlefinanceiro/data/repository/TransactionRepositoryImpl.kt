@@ -35,7 +35,6 @@ class TransactionRepositoryImpl @Inject constructor(
             monthYear = monthYear
         )
         transactionDao.markAsPaid(paymentStatus)
-        // Opcional: Sincronizar status de pagamento com remoto
     }
 
     override suspend fun markAsUnpaid(transactionId: String, monthYear: String) {
