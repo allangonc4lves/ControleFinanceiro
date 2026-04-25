@@ -1,5 +1,4 @@
-<img width="720" height="1560" alt="Screenshot_20260425_082958" src="https://github.com/user-attachments/assets/300a72f1-f52f-4def-b2fd-86f40a50e6d7" />
-# Zeno - Controle Financeiro 
+# Zeno - Financeiro 
 
 📱 Preview <br> (APP EM DESENVOLVIMENTO...)<br>
 
