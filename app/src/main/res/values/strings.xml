@@ -1,6 +1,12 @@
 <resources>
     <string name="app_name">Zeno</string>
 
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_transactions">Transactions</string>
+    <string name="nav_reports">Reports</string>
+    <string name="nav_credit_cards">Credit Cards</string>
+
     <!-- General -->
     <string name="confirm">Confirm</string>
     <string name="cancel">Cancel</string>

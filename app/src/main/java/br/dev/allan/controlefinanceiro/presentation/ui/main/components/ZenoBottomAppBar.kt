@@ -19,6 +19,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.compose.ui.res.stringResource
+import br.dev.allan.controlefinanceiro.R
 import br.dev.allan.controlefinanceiro.domain.model.ButtonAppBarNavigation
 import br.dev.allan.controlefinanceiro.presentation.viewmodel.NavigationViewModel
 import br.dev.allan.controlefinanceiro.presentation.ui.screens.navigation.HomeRoute
@@ -36,10 +38,10 @@ fun ZenoBottomAppBar(
     val currentDestination = navBackStackEntry?.destination
 
     val buttonsAppBarList = listOf(
-        ButtonAppBarNavigation("Home", Icons.Rounded.Home, HomeRoute),
-        ButtonAppBarNavigation("Transações", Icons.Rounded.CompareArrows, TransactionsRoute),
-        ButtonAppBarNavigation("Relatórios", Icons.Rounded.Analytics, ReportsRoute),
-        ButtonAppBarNavigation("CreditCards", Icons.Rounded.CreditCard, CreditCardsRoute)
+        ButtonAppBarNavigation(stringResource(R.string.nav_home), Icons.Rounded.Home, HomeRoute),
+        ButtonAppBarNavigation(stringResource(R.string.nav_transactions), Icons.Rounded.CompareArrows, TransactionsRoute),
+        ButtonAppBarNavigation(stringResource(R.string.nav_reports), Icons.Rounded.Analytics, ReportsRoute),
+        ButtonAppBarNavigation(stringResource(R.string.nav_credit_cards), Icons.Rounded.CreditCard, CreditCardsRoute)
     )
 
     BottomAppBar(
