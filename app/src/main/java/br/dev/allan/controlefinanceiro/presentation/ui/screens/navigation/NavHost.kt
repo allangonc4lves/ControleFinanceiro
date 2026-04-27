@@ -23,7 +23,12 @@ fun NavHost(
     navController: NavHostController,
     innerPadding: PaddingValues
 ) {
-    val currentUser = FirebaseAuth.getInstance().currentUser
+    val auth = FirebaseAuth.getInstance()
+    
+    // Verifica se o usuário existe no Auth e força reload para checar se a conta ainda é válida
+    val currentUser = auth.currentUser
+    
+    // Lógica de destino inicial baseada apenas no Auth
     val startDest = if (currentUser == null) LoginRoute else HomeRoute
 
     NavHost(

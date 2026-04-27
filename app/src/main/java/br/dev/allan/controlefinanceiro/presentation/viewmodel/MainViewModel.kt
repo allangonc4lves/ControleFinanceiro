@@ -7,11 +7,15 @@ import br.dev.allan.controlefinanceiro.domain.usecase.ObserveRemoteDataUseCase
 import br.dev.allan.controlefinanceiro.domain.usecase.SyncLocalToRemoteUseCase
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 @HiltViewModel
@@ -31,16 +35,34 @@ class MainViewModel @Inject constructor(
     private val _userPhotoUrl = MutableStateFlow(auth.currentUser?.photoUrl?.toString())
     val userPhotoUrl = _userPhotoUrl.asStateFlow()
 
+    private val _logoutEvent = MutableSharedFlow<Unit>()
+    val logoutEvent: SharedFlow<Unit> = _logoutEvent.asSharedFlow()
+
     init {
         // Atualiza as infos sempre que o estado da auth mudar ou na inicialização
         auth.addAuthStateListener { firebaseAuth ->
-            _userName.value = firebaseAuth.currentUser?.displayName ?: ""
-            _userEmail.value = firebaseAuth.currentUser?.email ?: ""
-            _userPhotoUrl.value = firebaseAuth.currentUser?.photoUrl?.toString()
+            val user = firebaseAuth.currentUser
+            _userName.value = user?.displayName ?: ""
+            _userEmail.value = user?.email ?: ""
+            _userPhotoUrl.value = user?.photoUrl?.toString()
         }
         
-        if (auth.currentUser != null) {
-            startSync()
+        checkAuthIntegrity()
+    }
+
+    private fun checkAuthIntegrity() {
+        val user = auth.currentUser ?: return
+        startSync()
+        
+        viewModelScope.launch {
+            try {
+                // Força o Firebase a verificar com o servidor se a conta ainda é válida
+                user.reload().await()
+            } catch (e: Exception) {
+                // Se o reload falhar (ex: conta desativada ou excluída no console)
+                auth.signOut()
+                _logoutEvent.emit(Unit)
+            }
         }
     }
 

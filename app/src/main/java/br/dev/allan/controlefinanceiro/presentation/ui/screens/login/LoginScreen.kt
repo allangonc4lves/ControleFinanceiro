@@ -28,8 +28,7 @@ fun LoginScreen(
     viewModel: LoginViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
-    
-    // Animação de escala para a logo
+
     val infiniteTransition = rememberInfiniteTransition(label = "logo_scale")
     val scale by infiniteTransition.animateFloat(
         initialValue = 0.95f,
@@ -56,11 +55,11 @@ fun LoginScreen(
                 painter = painterResource(id = R.drawable.zeno_positive),
                 contentDescription = "Zeno Logo",
                 modifier = Modifier
-                    .size(240.dp)
+                    .size(120.dp)
                     .scale(scale)
             )
             
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(16.dp))
             
             Text(
                 text = stringResource(id = R.string.welcome_to_zeno),

@@ -19,8 +19,9 @@ class CreditCardRemoteDataSource @Inject constructor(
 
     fun observeCards(): Flow<List<CreditCardDto>> {
         val userId = auth.currentUser?.uid ?: return kotlinx.coroutines.flow.emptyFlow()
-        return firestore.collection(collectionPath)
-            .whereEqualTo("userId", userId)
+        return firestore.collection("users")
+            .document(userId)
+            .collection(collectionPath)
             .snapshots()
             .map { snapshot ->
                 snapshot.toObjects(CreditCardDto::class.java)
@@ -32,7 +33,12 @@ class CreditCardRemoteDataSource @Inject constructor(
         val dto = card.toDto(userId)
         android.util.Log.d("FirestoreSync", "Tentando salvar cartão: ${dto.id} para o usuário: $userId")
         try {
-            firestore.collection(collectionPath).document(card.id).set(dto).await()
+            firestore.collection("users")
+                .document(userId)
+                .collection(collectionPath)
+                .document(card.id)
+                .set(dto)
+                .await()
             android.util.Log.d("FirestoreSync", "Cartão salvo com sucesso no Firestore: ${dto.id}")
         } catch (e: Exception) {
             android.util.Log.e("FirestoreSync", "Erro ao salvar cartão no Firestore: ${e.message}", e)
@@ -40,13 +46,20 @@ class CreditCardRemoteDataSource @Inject constructor(
     }
 
     suspend fun deleteCard(cardId: String) {
-        firestore.collection(collectionPath).document(cardId).delete().await()
+        val userId = auth.currentUser?.uid ?: return
+        firestore.collection("users")
+            .document(userId)
+            .collection(collectionPath)
+            .document(cardId)
+            .delete()
+            .await()
     }
 
     suspend fun fetchAllCards(): List<CreditCardDto> {
         val userId = auth.currentUser?.uid ?: return emptyList()
-        return firestore.collection(collectionPath)
-            .whereEqualTo("userId", userId)
+        return firestore.collection("users")
+            .document(userId)
+            .collection(collectionPath)
             .get()
             .await()
             .toObjects(CreditCardDto::class.java)

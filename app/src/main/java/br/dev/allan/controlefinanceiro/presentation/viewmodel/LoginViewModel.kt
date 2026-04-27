@@ -13,6 +13,7 @@ import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.launch
@@ -21,6 +22,7 @@ import javax.inject.Inject
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val auth: FirebaseAuth,
+    private val firestore: FirebaseFirestore,
     private val syncDataUseCase: SyncDataUseCase,
     private val syncLocalToRemoteUseCase: SyncLocalToRemoteUseCase
 ) : ViewModel() {
@@ -49,6 +51,19 @@ class LoginViewModel @Inject constructor(
                     val firebaseCredential = GoogleAuthProvider.getCredential(credential.idToken, null)
                     val authResult = auth.signInWithCredential(firebaseCredential).await()
                     android.util.Log.d("LoginDebug", "Firebase Auth sucesso: ${authResult.user?.email}")
+
+                    // Cria o documento do usuário no Firestore se ele não existir
+                    val user = authResult.user
+                    if (user != null) {
+                        val userDoc = mapOf(
+                            "uid" to user.uid,
+                            "email" to user.email,
+                            "displayName" to user.displayName,
+                            "photoUrl" to user.photoUrl?.toString(),
+                            "lastLogin" to System.currentTimeMillis()
+                        )
+                        firestore.collection("users").document(user.uid).set(userDoc).await()
+                    }
 
                     android.util.Log.d("LoginDebug", "Iniciando Sincronização...")
                     syncLocalToRemoteUseCase()

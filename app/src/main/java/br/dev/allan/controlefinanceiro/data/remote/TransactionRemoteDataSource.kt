@@ -19,8 +19,9 @@ class TransactionRemoteDataSource @Inject constructor(
 
     fun observeTransactions(): Flow<List<TransactionDto>> {
         val userId = auth.currentUser?.uid ?: return kotlinx.coroutines.flow.emptyFlow()
-        return firestore.collection(collectionPath)
-            .whereEqualTo("userId", userId)
+        return firestore.collection("users")
+            .document(userId)
+            .collection(collectionPath)
             .snapshots()
             .map { snapshot ->
                 snapshot.toObjects(TransactionDto::class.java)
@@ -34,7 +35,9 @@ class TransactionRemoteDataSource @Inject constructor(
         android.util.Log.d("FirestoreSync", "Tentando salvar transação: ${dto.id} para o usuário: $userId")
         
         try {
-            firestore.collection(collectionPath)
+            firestore.collection("users")
+                .document(userId)
+                .collection(collectionPath)
                 .document(dto.id)
                 .set(dto)
                 .await()
@@ -45,7 +48,13 @@ class TransactionRemoteDataSource @Inject constructor(
     }
 
     suspend fun deleteTransaction(transactionId: String) {
-        firestore.collection(collectionPath).document(transactionId).delete().await()
+        val userId = auth.currentUser?.uid ?: return
+        firestore.collection("users")
+            .document(userId)
+            .collection(collectionPath)
+            .document(transactionId)
+            .delete()
+            .await()
     }
 
     suspend fun syncTransactions(transactions: List<Transaction>) {
@@ -54,7 +63,10 @@ class TransactionRemoteDataSource @Inject constructor(
         
         transactions.forEach { transaction ->
             val dto = transaction.toDto(userId)
-            val docRef = firestore.collection(collectionPath).document(dto.id)
+            val docRef = firestore.collection("users")
+                .document(userId)
+                .collection(collectionPath)
+                .document(dto.id)
             batch.set(docRef, dto)
         }
         
@@ -63,8 +75,9 @@ class TransactionRemoteDataSource @Inject constructor(
 
     suspend fun fetchAllTransactions(): List<TransactionDto> {
         val userId = auth.currentUser?.uid ?: return emptyList()
-        return firestore.collection(collectionPath)
-            .whereEqualTo("userId", userId)
+        return firestore.collection("users")
+            .document(userId)
+            .collection(collectionPath)
             .get()
             .await()
             .toObjects(TransactionDto::class.java)

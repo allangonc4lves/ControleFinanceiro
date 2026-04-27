@@ -15,3 +15,5 @@
 
 # Firebase
 app/google-services.json
+app/release
+app/build
