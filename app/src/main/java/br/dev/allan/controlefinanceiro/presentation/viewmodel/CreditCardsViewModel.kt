@@ -18,7 +18,9 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.system.measureTimeMillis
 import java.util.UUID
 import javax.inject.Inject
 
@@ -97,13 +99,18 @@ class CreditCardsViewModel @Inject constructor(
         )
 
         viewModelScope.launch {
-            if (currentCardId == null) {
-                repository.addCard(card)
-            } else {
-                repository.updateCard(card)
+            val executionTime = measureTimeMillis {
+                if (currentCardId == null) {
+                    repository.addCard(card)
+                } else {
+                    repository.updateCard(card)
+                }
+
+                _uiEvent.send(SaveCreditCardUiEvent.SaveSuccess)
             }
 
-            _uiEvent.send(SaveCreditCardUiEvent.SaveSuccess)
+            val remainingTime = 2000L - executionTime
+            if (remainingTime > 0) delay(remainingTime)
             uiState = uiState.copy(isLoading = false)
         }
     }
@@ -111,8 +118,14 @@ class CreditCardsViewModel @Inject constructor(
     fun removeCard() {
         currentCardId?.let { id ->
             viewModelScope.launch {
-                repository.removeCard(id)
-                _uiEvent.send(SaveCreditCardUiEvent.SaveSuccess)
+                uiState = uiState.copy(isLoading = true)
+                val executionTime = measureTimeMillis {
+                    repository.removeCard(id)
+                    _uiEvent.send(SaveCreditCardUiEvent.SaveSuccess)
+                }
+                val remainingTime = 2000L - executionTime
+                if (remainingTime > 0) delay(remainingTime)
+                uiState = uiState.copy(isLoading = false)
             }
         }
     }

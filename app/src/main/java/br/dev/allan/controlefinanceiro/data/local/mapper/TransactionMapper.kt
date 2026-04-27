@@ -49,7 +49,7 @@ fun Transaction.toEntity(): TransactionEntity {
     )
 }
 
-fun Transaction.toUi(currencyManager: CurrencyManager, code: String): TransactionUIState {
+fun Transaction.toUi(currencyManager: CurrencyManager, code: String, referenceDate: Long? = null): TransactionUIState {
     val prefix = if (direction == TransactionDirection.EXPENSE) "- " else "+ "
 
     val dateObj = try {
@@ -58,8 +58,13 @@ fun Transaction.toUi(currencyManager: CurrencyManager, code: String): Transactio
         Date()
     }
 
+    val parcelInfo = if (installmentCount > 1) {
+        "$currentInstallment / $installmentCount"
+    } else null
+
     return TransactionUIState(
         id = id,
+        groupId = groupId,
         title = title,
         amount = amount,
         dateMillis = dateObj.time,
@@ -75,7 +80,7 @@ fun Transaction.toUi(currencyManager: CurrencyManager, code: String): Transactio
         installmentCount = installmentCount,
         creditCardId = creditCardId,
         formattedTotalAmount = currencyManager.formatByCurrencyCode(amount, code),
-        formattedParcelInfo = null
+        formattedParcelInfo = parcelInfo
     )
 }
 
@@ -99,7 +104,7 @@ fun TransactionEntity.toDomain(
     val displayDate = this.date
 
     val isPaidResult = if (monthYear != null) {
-        payments.any { it.transactionId == this.id.toString() && it.monthYear == monthYear } || this.isPaid
+        payments.any { it.transactionId == this.id && it.monthYear == monthYear } || this.isPaid
     } else {
         this.isPaid
     }

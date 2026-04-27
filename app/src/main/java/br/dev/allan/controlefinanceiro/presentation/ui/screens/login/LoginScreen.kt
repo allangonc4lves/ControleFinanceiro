@@ -102,7 +102,6 @@ fun LoginScreen(
             }
         }
 
-        // Rodapé
         Text(
             text = stringResource(id = R.string.developed_by),
             style = MaterialTheme.typography.bodySmall,

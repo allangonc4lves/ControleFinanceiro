@@ -83,6 +83,8 @@
     <string name="next_month">Próximo Mês</string>
     <string name="insufficient_balance_msg">Saldo insuficiente para manter esta despesa como paga. Desmarque o pagamento para salvar.</string>
     <string name="insufficient_balance_card">Saldo insuficiente para pagar esta fatura!</string>
+    <string name="card_payment_error">Esta compra foi realizada no cartão %1$s. Para dar baixa, marque a fatura correspondente como paga na tela de Cartões.</string>
+    <string name="insufficient_balance_payment">Saldo insuficiente para pagar esta conta!</string>
     <string name="mark_as_paid">Marcar como pago</string>
     <string name="edit_options">Opções de Edição</string>
     <string name="only_this_installment">Apenas esta parcela</string>

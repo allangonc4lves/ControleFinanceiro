@@ -63,7 +63,7 @@ class MonthTransactionsViewModel @Inject constructor(
                     transaction.isInstallment -> !transaction.isExpired(monthMillis)
                     else -> true
                 }
-            }.map { it.toUi(currencyManager, code) }
+            }.map { it.toUi(currencyManager, code, monthMillis) }
         }
     }.flatMapLatest { it }
         .stateIn(
@@ -72,8 +72,12 @@ class MonthTransactionsViewModel @Inject constructor(
             initialValue = emptyList()
         )
 
-    private val _uiEvent = kotlinx.coroutines.channels.Channel<String>()
+    private val _uiEvent = kotlinx.coroutines.channels.Channel<UiEvent>()
     val uiEvent = _uiEvent.receiveAsFlow()
+
+    sealed class UiEvent {
+        data class ShowSnackbar(val messageResId: Int, val formatArgs: List<String> = emptyList()) : UiEvent()
+    }
 
     fun togglePayment(uiModel: TransactionUIState) {
         viewModelScope.launch {
@@ -82,8 +86,8 @@ class MonthTransactionsViewModel @Inject constructor(
             // Bloqueio para compras no cartão
             if (uiModel.creditCardId != null && uiModel.direction == TransactionDirection.EXPENSE) {
                 val card = cardRepository.getCardById(uiModel.creditCardId)
-                val cardName = card?.bankName ?: "Cartão"
-                _uiEvent.send("Esta compra foi realizada no cartão $cardName. Para dar baixa, marque a fatura correspondente como paga na tela de Cartões.")
+                val cardName = card?.bankName ?: "Card"
+                _uiEvent.send(UiEvent.ShowSnackbar(br.dev.allan.controlefinanceiro.R.string.card_payment_error, listOf(cardName)))
                 return@launch
             }
 
@@ -99,7 +103,7 @@ class MonthTransactionsViewModel @Inject constructor(
                     .sumOf { it.amount }
 
                 if (totalPaidExpenses + uiModel.amount > totalIncome) {
-                    _uiEvent.send("Saldo insuficiente para pagar esta conta!")
+                    _uiEvent.send(UiEvent.ShowSnackbar(br.dev.allan.controlefinanceiro.R.string.insufficient_balance_payment))
                     return@launch
                 }
             }

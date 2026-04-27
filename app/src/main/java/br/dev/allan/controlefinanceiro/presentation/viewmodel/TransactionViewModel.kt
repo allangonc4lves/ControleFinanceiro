@@ -18,7 +18,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.system.measureTimeMillis
 import java.text.SimpleDateFormat
 import java.util.Locale
 import javax.inject.Inject
@@ -86,33 +88,42 @@ class TransactionViewModel @Inject constructor(
             is TransactionAction.CreditCardToggle ->
                 updateState { it.copy(isCreditCard = action.isCreditCard, creditCardId = if (!action.isCreditCard) null else it.creditCardId) }
 
-            is TransactionAction.Save -> save()
+            is TransactionAction.Save -> save(action.editAll)
 
             is TransactionAction.Delete -> delete()
         }
     }
 
-    fun save() {
+    fun save(editAll: Boolean = false) {
         viewModelScope.launch {
             updateState { it.copy(isLoading = true) }
-            val result = saveUseCase.execute(_uiState.value, currentId)
 
-            if (result.isSuccess) {
-                _uiEvent.send(SaveTransactionUiEvent.SaveSuccess)
-            } else {
-                val errorMsg = result.exceptionOrNull()?.message
-                updateState { state ->
-                    val titleRes = saveUseCase.validateText.execute(state.title)
-                    val amountRes = saveUseCase.validateAmount.execute(state.amountInput)
-                    val catRes = saveUseCase.validateCategory.execute(state.category)
+            val executionTime = measureTimeMillis {
+                val result = saveUseCase.execute(_uiState.value, currentId, editAll)
 
-                    state.copy(
-                        isLoading = false,
-                        titleError = titleRes.errorMessageRes?.let { "error_res_$it" },
-                        amountError = amountRes.errorMessageRes?.let { "error_res_$it" },
-                        categoryError = catRes.errorMessageRes?.let { "error_res_$it" }
-                    )
+                if (result.isSuccess) {
+                    _uiEvent.send(SaveTransactionUiEvent.SaveSuccess)
+                } else {
+                    val errorMsg = result.exceptionOrNull()?.message
+                    updateState { state ->
+                        val titleRes = saveUseCase.validateText.execute(state.title)
+                        val amountRes = saveUseCase.validateAmount.execute(state.amountInput)
+                        val catRes = saveUseCase.validateCategory.execute(state.category)
+
+                        state.copy(
+                            isLoading = false,
+                            titleError = titleRes.errorMessageRes?.let { "error_res_$it" },
+                            amountError = amountRes.errorMessageRes?.let { "error_res_$it" },
+                            categoryError = catRes.errorMessageRes?.let { "error_res_$it" }
+                        )
+                    }
                 }
+            }
+
+            if (_uiState.value.isLoading) {
+                val remainingTime = 2000L - executionTime
+                if (remainingTime > 0) delay(remainingTime)
+                updateState { it.copy(isLoading = false) }
             }
         }
     }
@@ -120,8 +131,19 @@ class TransactionViewModel @Inject constructor(
     fun delete() {
         currentId?.let { id ->
             viewModelScope.launch {
-                repository.deleteTransaction(id)
-                _uiEvent.send(SaveTransactionUiEvent.SaveSuccess)
+                updateState { it.copy(isLoading = true) }
+                val executionTime = measureTimeMillis {
+                    val groupId = _uiState.value.groupId
+                    if (groupId != null) {
+                        repository.deleteTransactionGroup(groupId)
+                    } else {
+                        repository.deleteTransaction(id)
+                    }
+                    _uiEvent.send(SaveTransactionUiEvent.SaveSuccess)
+                }
+                val remainingTime = 2000L - executionTime
+                if (remainingTime > 0) delay(remainingTime)
+                updateState { it.copy(isLoading = false) }
             }
         }
     }
@@ -135,6 +157,8 @@ class TransactionViewModel @Inject constructor(
             repository.getTransactionById(id)?.let { tx ->
                 currentId = tx.id
                 updateState { it.copy(
+                    id = tx.id,
+                    groupId = tx.groupId,
                     title = tx.title,
                     amountInput = formatAmountForUi(tx.amount),
                     dateDisplay = DateHelper.fromDbToUi(tx.date),
@@ -144,6 +168,7 @@ class TransactionViewModel @Inject constructor(
                     isPaid = tx.isPaid,
                     creditCardId = tx.creditCardId,
                     type = if (tx.isInstallment || tx.type == TransactionType.REPEAT) tx.type else TransactionType.DEFAULT,
+                    currentInstallment = tx.currentInstallment,
                     installmentCount = if (tx.isInstallment || tx.type == TransactionType.REPEAT) tx.installmentCount else 1,
                     isCreditCard = tx.creditCardId != null
                 )}

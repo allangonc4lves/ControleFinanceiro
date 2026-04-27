@@ -83,6 +83,8 @@
     <string name="next_month">Next Month</string>
     <string name="insufficient_balance_msg">Insufficient balance to keep this expense as paid. Uncheck payment to save.</string>
     <string name="insufficient_balance_card">Insufficient balance to pay this invoice!</string>
+    <string name="card_payment_error">This purchase was made on card %1$s. To pay it off, mark the corresponding invoice as paid on the Cards screen.</string>
+    <string name="insufficient_balance_payment">Insufficient balance to pay this bill!</string>
     <string name="mark_as_paid">Mark as paid</string>
     <string name="edit_options">Edit Options</string>
     <string name="only_this_installment">Only this installment</string>
