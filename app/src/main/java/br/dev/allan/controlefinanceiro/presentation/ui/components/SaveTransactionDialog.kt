@@ -329,14 +329,6 @@ fun SaveTransactionDialog(
                             )
                         }
                     }
-
-                    if (uiState.category == TransactionCategory.OTHERS_EXPENSE) {
-                        CardSelector(
-                            cards = uiState.cards,
-                            selectedCardId = uiState.creditCardId,
-                            onCardSelected = { onAction(TransactionAction.CardSelected(it)) }
-                        )
-                    }
                 }
 
                 if (uiState.isLoading) {

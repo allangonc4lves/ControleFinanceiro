@@ -21,7 +21,7 @@ class SaveTransactionUseCase @Inject constructor(
     val validateAmount: ValidateAmount,
     val validateCategory: ValidateCategory
 ) {
-    suspend fun execute(state: TransactionUIState, id: String?): Result<Unit> {
+    suspend fun execute(state: TransactionUIState, id: String?, editAll: Boolean = false): Result<Unit> {
         val titleRes = validateText.execute(state.title)
         val amountRes = validateAmount.execute(state.amountInput)
         val catRes = validateCategory.execute(state.category)
@@ -31,7 +31,6 @@ class SaveTransactionUseCase @Inject constructor(
         }
 
         val amount = state.amountInput.parseToDouble()
-
         val dateToSave = DateHelper.fromUiToDb(state.dateDisplay)
 
         return try {
@@ -42,7 +41,31 @@ class SaveTransactionUseCase @Inject constructor(
                     repository.insertTransaction(state.toDomain(amount, dateToSave))
                 }
             } else {
-                repository.updateTransaction(state.toDomain(amount, dateToSave, id))
+                val original = repository.getTransactionById(id)
+                if (original != null) {
+
+                    original.groupId?.let { groupId ->
+                        repository.updateCardIdByGroupId(groupId, state.creditCardId)
+                    }
+
+                    if (editAll && original.groupId != null) {
+                        repository.updateTransactionGroup(
+                            groupId = original.groupId,
+                            title = state.title,
+                            amount = amount,
+                            category = state.category!!,
+                            creditCardId = state.creditCardId
+                        )
+                    } else {
+                        val toUpdate = state.toDomain(amount, dateToSave, id).copy(
+                            groupId = original.groupId,
+                            currentInstallment = original.currentInstallment,
+                            installmentCount = original.installmentCount,
+                            isInstallment = original.isInstallment
+                        )
+                        repository.updateTransaction(toUpdate)
+                    }
+                }
             }
             Result.success(Unit)
         } catch (e: Exception) {
@@ -89,5 +112,5 @@ private fun TransactionUIState.toDomain(amount: Double, dateForDb: String, id: S
     creditCardId = this.creditCardId,
     isPaid = this.isPaid,
     type = this.type,
-    installmentCount = if(this.type == TransactionType.REPEAT) this.installmentCount else 0
+    installmentCount = this.installmentCount
 )

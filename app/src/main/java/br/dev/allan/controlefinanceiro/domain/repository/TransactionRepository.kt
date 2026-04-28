@@ -34,5 +34,6 @@ interface TransactionRepository {
         creditCardId: String?
     )
     suspend fun updateCardIdByGroupId(groupId: String, cardId: String?)
+    suspend fun getTransactionsByGroupId(groupId: String): List<Transaction>
     suspend fun deleteTransaction(transaction: Transaction)
 }

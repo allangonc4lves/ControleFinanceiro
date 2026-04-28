@@ -105,6 +105,9 @@ interface TransactionDao {
     @Query("UPDATE transactions SET creditCardId = :cardId WHERE groupId = :groupId")
     suspend fun updateCardIdByGroupId(groupId: String, cardId: String?)
 
+    @Query("SELECT * FROM transactions WHERE groupId = :groupId")
+    suspend fun getTransactionsByGroupId(groupId: String): List<TransactionEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun markAsPaid(payment: PaymentStatusEntity)
 

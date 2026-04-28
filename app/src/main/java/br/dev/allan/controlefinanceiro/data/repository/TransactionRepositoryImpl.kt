@@ -164,10 +164,18 @@ class TransactionRepositoryImpl @Inject constructor(
         creditCardId: String?
     ) {
         transactionDao.updateTransactionGroup(groupId, title, amount, category.name, creditCardId)
+        val updatedTransactions = transactionDao.getTransactionsByGroupId(groupId).map { it.toDomain() }
+        remoteDataSource.syncTransactions(updatedTransactions)
     }
 
     override suspend fun updateCardIdByGroupId(groupId: String, cardId: String?) {
         transactionDao.updateCardIdByGroupId(groupId, cardId)
+        val updatedTransactions = transactionDao.getTransactionsByGroupId(groupId).map { it.toDomain() }
+        remoteDataSource.syncTransactions(updatedTransactions)
+    }
+
+    override suspend fun getTransactionsByGroupId(groupId: String): List<Transaction> {
+        return transactionDao.getTransactionsByGroupId(groupId).map { it.toDomain() }
     }
 
     override suspend fun deleteTransaction(transaction: Transaction) {
