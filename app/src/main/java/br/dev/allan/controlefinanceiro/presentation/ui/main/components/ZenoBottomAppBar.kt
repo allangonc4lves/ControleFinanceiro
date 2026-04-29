@@ -42,8 +42,9 @@ import br.dev.allan.controlefinanceiro.presentation.ui.screens.navigation.HomeRo
 import br.dev.allan.controlefinanceiro.presentation.ui.screens.navigation.TransactionsRoute
 import br.dev.allan.controlefinanceiro.presentation.ui.screens.navigation.CreditCardsRoute
 import androidx.navigation.NavDestination.Companion.hasRoute
+import br.dev.allan.controlefinanceiro.presentation.ui.components.Loading
 import br.dev.allan.controlefinanceiro.presentation.viewmodel.MainViewModel
-import coil3.compose.AsyncImage
+import coil3.compose.SubcomposeAsyncImage
 
 @Composable
 fun ZenoBottomAppBar(
@@ -176,11 +177,26 @@ fun ZenoBottomAppBar(
                         contentAlignment = Alignment.Center
                     ) {
                         if (userPhotoUrl != null) {
-                            AsyncImage(
+                            SubcomposeAsyncImage(
                                 model = userPhotoUrl,
                                 contentDescription = stringResource(id = R.string.user_image),
                                 modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Crop
+                                contentScale = ContentScale.Crop,
+                                loading = {
+                                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                        Loading(
+                                            size = 24.dp,
+                                            strokeWidth = 4.dp
+                                        )
+                                    }
+                                },
+                                error = {
+                                    Image(
+                                        painter = painterResource(R.drawable.user_without_img),
+                                        contentDescription = stringResource(id = R.string.user_image),
+                                        modifier = Modifier.fillMaxSize()
+                                    )
+                                }
                             )
                         } else {
                             Image(

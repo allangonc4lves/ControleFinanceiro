@@ -4,10 +4,10 @@ data class CreditCardDto(
     val id: String = "",
     val bankName: String = "",
     val brand: String = "",
-    val lastDigits: Int = 0,
-    val invoiceClosing: Int = 1,
-    val dueDate: Int = 10,
-    val backgroundColor: Long = 0xFF000000,
+    val lastDigits: Any? = 0,
+    val invoiceClosing: Any? = 1,
+    val dueDate: Any? = 10,
+    val backgroundColor: Any? = 0xFF000000,
     @field:JvmField
     val activated: Boolean = true,
     val userId: String = ""

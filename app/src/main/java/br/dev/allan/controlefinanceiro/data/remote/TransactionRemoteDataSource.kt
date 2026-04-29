@@ -17,34 +17,37 @@ class TransactionRemoteDataSource @Inject constructor(
 ) {
     private val collectionPath = "transactions"
 
-    fun observeTransactions(): Flow<List<TransactionDto>> {
+    fun observeTransactions(): Flow<List<Pair<TransactionDto, DocumentChangeType>>> {
         val userId = auth.currentUser?.uid ?: return kotlinx.coroutines.flow.emptyFlow()
         return firestore.collection("users")
             .document(userId)
             .collection(collectionPath)
             .snapshots()
             .map { snapshot ->
-                snapshot.toObjects(TransactionDto::class.java)
+                snapshot.documentChanges.map { change ->
+                    val dto = change.document.toObject(TransactionDto::class.java)
+                    val type = when (change.type) {
+                        com.google.firebase.firestore.DocumentChange.Type.ADDED,
+                        com.google.firebase.firestore.DocumentChange.Type.MODIFIED -> DocumentChangeType.UPSERT
+                        com.google.firebase.firestore.DocumentChange.Type.REMOVED -> DocumentChangeType.DELETE
+                    }
+                    Pair(dto, type)
+                }
             }
     }
+
+    enum class DocumentChangeType { UPSERT, DELETE }
 
     suspend fun saveTransaction(transaction: Transaction) {
         val userId = auth.currentUser?.uid ?: return
         val dto = transaction.toDto(userId)
-        
-        android.util.Log.d("FirestoreSync", "Tentando salvar transação: ${dto.id} para o usuário: $userId")
-        
-        try {
-            firestore.collection("users")
-                .document(userId)
-                .collection(collectionPath)
-                .document(dto.id)
-                .set(dto)
-                .await()
-            android.util.Log.d("FirestoreSync", "Transação salva com sucesso no Firestore: ${dto.id}")
-        } catch (e: Exception) {
-            android.util.Log.e("FirestoreSync", "Erro ao salvar transação no Firestore: ${e.message}", e)
-        }
+        android.util.Log.d("FirestoreSync", "Agendando sincronização da transação: ${dto.id}")
+        firestore.collection("users")
+            .document(userId)
+            .collection(collectionPath)
+            .document(dto.id)
+            .set(dto)
+            .await()
     }
 
     suspend fun deleteTransaction(transactionId: String) {
@@ -89,7 +92,11 @@ class TransactionRemoteDataSource @Inject constructor(
     }
 
     suspend fun fetchAllTransactions(): List<TransactionDto> {
-        val userId = auth.currentUser?.uid ?: return emptyList()
+        val userId = auth.currentUser?.uid ?: run {
+            android.util.Log.e("SyncDebug", "fetchAllTransactions: userId é nulo!")
+            return emptyList()
+        }
+        android.util.Log.d("SyncDebug", "fetchAllTransactions: buscando dados para o usuário $userId")
         return firestore.collection("users")
             .document(userId)
             .collection(collectionPath)

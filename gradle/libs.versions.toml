@@ -20,6 +20,8 @@ compose-material = "1.10.6"
 compose-icons = "1.7.8"
 datastore = "1.2.1"
 navigation = "2.9.7"
+work = "2.11.2"
+hiltWork = "1.3.0"
 kotlinSerialization = "1.11.0"
 androidxMaterial3 = "1.4.0"
 coil = "3.4.0"
@@ -84,6 +86,9 @@ coil-network = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = 
 androidx-credentials = { group = "androidx.credentials", name = "credentials", version.ref = "credentials" }
 androidx-credentials-play-services-auth = { group = "androidx.credentials", name = "credentials-play-services-auth", version.ref = "credentials" }
 googleid = { group = "com.google.android.libraries.identity.googleid", name = "googleid", version.ref = "googleid" }
+androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "work" }
+androidx-hilt-work = { group = "androidx.hilt", name = "hilt-work", version.ref = "hiltWork" }
+androidx-hilt-work-compiler = { group = "androidx.hilt", name = "hilt-compiler", version.ref = "hiltWork" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

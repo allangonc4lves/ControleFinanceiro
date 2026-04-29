@@ -109,127 +109,120 @@ fun SaveCreditCardDialog(
         onDismiss = { onDismiss() },
         onConfirm = { viewModel.saveCard() },
         content = {
-            Box(contentAlignment = Alignment.Center) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .alpha(if (state.isLoading) 0.5f else 1f)
-                        .verticalScroll(rememberScrollState()),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        CustomTextTitle(if (cardId == null) stringResource(id = R.string.new_card) else stringResource(id = R.string.edit_card))
-                        if (cardId != null) {
-                            IconButton(onClick = { showDeleteConfirm = true }) {
-                                Icon(
-                                    Icons.Default.Delete,
-                                    contentDescription = stringResource(id = R.string.delete),
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
-                            }
+                    CustomTextTitle(if (cardId == null) stringResource(id = R.string.new_card) else stringResource(id = R.string.edit_card))
+                    if (cardId != null) {
+                        IconButton(onClick = { showDeleteConfirm = true }) {
+                            Icon(
+                                Icons.Default.Delete,
+                                contentDescription = stringResource(id = R.string.delete),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
                         }
                     }
+                }
+                CustomOutlinedTextField(
+                    value = state.bankName,
+                    label = stringResource(id = R.string.bank_label),
+                    capitalization = KeyboardCapitalization.Sentences,
+                    isError = state.bankNameError != null,
+                    errorMessage = state.bankNameError?.let {
+                        if (it.startsWith("error_res_")) {
+                            stringResource(it.removePrefix("error_res_").toInt())
+                        } else it
+                    } ?: "",
+                    onValueChange = { viewModel.onBankNameChange(it) }
+                )
+                Row(modifier = Modifier.fillMaxWidth()) {
                     CustomOutlinedTextField(
-                        value = state.bankName,
-                        label = stringResource(id = R.string.bank_label),
+                        modifier = Modifier.weight(0.6f),
+                        value = state.brand,
+                        label = stringResource(id = R.string.brand_label),
                         capitalization = KeyboardCapitalization.Sentences,
-                        isError = state.bankNameError != null,
-                        errorMessage = state.bankNameError?.let {
+                        isError = state.brandError != null,
+                        errorMessage = state.brandError?.let {
                             if (it.startsWith("error_res_")) {
                                 stringResource(it.removePrefix("error_res_").toInt())
                             } else it
                         } ?: "",
-                        onValueChange = { viewModel.onBankNameChange(it) }
+                        onValueChange = { viewModel.onBrandChange(it) }
                     )
-                    Row(modifier = Modifier.fillMaxWidth()) {
-                        CustomOutlinedTextField(
-                            modifier = Modifier.weight(0.6f),
-                            value = state.brand,
-                            label = stringResource(id = R.string.brand_label),
-                            capitalization = KeyboardCapitalization.Sentences,
-                            isError = state.brandError != null,
-                            errorMessage = state.brandError?.let {
-                                if (it.startsWith("error_res_")) {
-                                    stringResource(it.removePrefix("error_res_").toInt())
-                                } else it
-                            } ?: "",
-                            onValueChange = { viewModel.onBrandChange(it) }
-                        )
-                        CustomOutlinedTextField(
-                            modifier = Modifier.weight(0.4f),
-                            value = state.lastDigits,
-                            label = stringResource(id = R.string.last_digits_label),
-                            inputMode = InputModeCustomTextField.DIGITS,
-                            maxLength = 4,
-                            capitalization = KeyboardCapitalization.None,
-                            keyboardType = KeyboardType.NumberPassword,
-                            isError = state.lastDigitsError != null,
-                            errorMessage = state.lastDigitsError?.let {
-                                if (it.startsWith("error_res_")) {
-                                    stringResource(it.removePrefix("error_res_").toInt())
-                                } else it
-                            } ?: "",
-                            onValueChange = {
-                                viewModel.onLastDigitsChange(it)
-                            }
-                        )
-                    }
-
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        CustomOutlinedTextField(
-                            modifier = Modifier.weight(0.5f),
-                            value = state.invoiceClosing.toString(),
-                            label = stringResource(id = R.string.invoice_closing_label),
-                            inputMode = InputModeCustomTextField.DIGITS,
-                            maxLength = 2,
-                            onValueChange = {
-                                val day = it.toIntOrNull() ?: 1
-                                if (day in 1..28) {
-                                    viewModel.onInvoiceClosingChange(day)
-                                }
-                            }
-                        )
-
-                        CustomOutlinedTextField(
-                            modifier = Modifier.weight(0.5f),
-                            value = state.dueDate.toString(),
-                            label = stringResource(id = R.string.due_date_label),
-                            inputMode = InputModeCustomTextField.DIGITS,
-                            maxLength = 2,
-                            onValueChange = {
-                                val day = it.toIntOrNull() ?: 1
-                                if (day in 1..31) {
-                                    viewModel.onDueDateChange(day)
-                                }
-                            }
-                        )
-                    }
-
-                    Spacer(Modifier.height(4.dp))
-                    Text(stringResource(id = R.string.select_color))
-                    ColorSelector(
-                        palette = state.palette,
-                        initialSelectedColor = state.backgroundColor,
-                        onColorSelected = { viewModel.onColorSelected(it) }
-                    )
-                    Spacer(Modifier.height(4.dp))
-                    CreditCardPreview(
-                        bankName = state.bankName,
-                        brand = state.brand,
-                        lastDigits = state.lastDigits,
-                        backgroundColorLong = state.backgroundColor,
-                        previewType = CreditCardPreviewType.SMALL
+                    CustomOutlinedTextField(
+                        modifier = Modifier.weight(0.4f),
+                        value = state.lastDigits,
+                        label = stringResource(id = R.string.last_digits_label),
+                        inputMode = InputModeCustomTextField.DIGITS,
+                        maxLength = 4,
+                        capitalization = KeyboardCapitalization.None,
+                        keyboardType = KeyboardType.NumberPassword,
+                        isError = state.lastDigitsError != null,
+                        errorMessage = state.lastDigitsError?.let {
+                            if (it.startsWith("error_res_")) {
+                                stringResource(it.removePrefix("error_res_").toInt())
+                            } else it
+                        } ?: "",
+                        onValueChange = {
+                            viewModel.onLastDigitsChange(it)
+                        }
                     )
                 }
 
-                if (state.isLoading) {
-                    Loading()
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    CustomOutlinedTextField(
+                        modifier = Modifier.weight(0.5f),
+                        value = state.invoiceClosing.toString(),
+                        label = stringResource(id = R.string.invoice_closing_label),
+                        inputMode = InputModeCustomTextField.DIGITS,
+                        maxLength = 2,
+                        onValueChange = {
+                            val day = it.toIntOrNull() ?: 1
+                            if (day in 1..28) {
+                                viewModel.onInvoiceClosingChange(day)
+                            }
+                        }
+                    )
+
+                    CustomOutlinedTextField(
+                        modifier = Modifier.weight(0.5f),
+                        value = state.dueDate.toString(),
+                        label = stringResource(id = R.string.due_date_label),
+                        inputMode = InputModeCustomTextField.DIGITS,
+                        maxLength = 2,
+                        onValueChange = {
+                            val day = it.toIntOrNull() ?: 1
+                            if (day in 1..31) {
+                                viewModel.onDueDateChange(day)
+                            }
+                        }
+                    )
                 }
+
+                Spacer(Modifier.height(4.dp))
+                Text(stringResource(id = R.string.select_color))
+                ColorSelector(
+                    palette = state.palette,
+                    initialSelectedColor = state.backgroundColor,
+                    onColorSelected = { viewModel.onColorSelected(it) }
+                )
+                Spacer(Modifier.height(4.dp))
+                CreditCardPreview(
+                    bankName = state.bankName,
+                    brand = state.brand,
+                    lastDigits = state.lastDigits,
+                    backgroundColorLong = state.backgroundColor,
+                    previewType = CreditCardPreviewType.SMALL
+                )
             }
         }
     )

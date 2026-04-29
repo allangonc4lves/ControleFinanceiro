@@ -11,6 +11,8 @@ import java.util.Locale
 
 private val Context.dataStore by preferencesDataStore(name = "settings")
 private val CURRENCY_CODE = stringPreferencesKey("currency_code")
+private val USER_PHOTO_URL = stringPreferencesKey("user_photo_url")
+
 class SettingsManager(private val context: Context) {
 
     private val IS_BALANCE_VISIBLE = booleanPreferencesKey("is_balance_visible")
@@ -32,6 +34,19 @@ class SettingsManager(private val context: Context) {
     suspend fun setCurrencyCode(code: String) {
         context.dataStore.edit { preferences ->
             preferences[CURRENCY_CODE] = code
+        }
+    }
+
+    val userPhotoUrl: Flow<String?> = context.dataStore.data
+        .map { preferences -> preferences[USER_PHOTO_URL] }
+
+    suspend fun setUserPhotoUrl(url: String?) {
+        context.dataStore.edit { preferences ->
+            if (url != null) {
+                preferences[USER_PHOTO_URL] = url
+            } else {
+                preferences.remove(USER_PHOTO_URL)
+            }
         }
     }
 

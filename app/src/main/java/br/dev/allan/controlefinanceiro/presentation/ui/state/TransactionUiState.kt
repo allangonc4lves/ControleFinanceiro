@@ -32,7 +32,6 @@ data class TransactionUIState(
     val installmentCount: Int = 1,
     val isDivideValue: Boolean = true,
     val isDatePickerVisible: Boolean = false,
-    val isLoading: Boolean = false,
     val titleError: String? = null,
     val amountError: String? = null,
     val categoryError: String? = null,

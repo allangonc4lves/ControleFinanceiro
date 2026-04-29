@@ -1,12 +1,19 @@
 package br.dev.allan.controlefinanceiro.presentation.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import br.dev.allan.controlefinanceiro.data.dataStore.SettingsManager
 import br.dev.allan.controlefinanceiro.domain.usecase.ObserveRemoteDataUseCase
+import br.dev.allan.controlefinanceiro.domain.usecase.SyncDataUseCase
 import br.dev.allan.controlefinanceiro.domain.usecase.SyncLocalToRemoteUseCase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.FirebaseNetworkException
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -20,8 +27,10 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val settingsManager: SettingsManager,
     private val syncLocalToRemoteUseCase: SyncLocalToRemoteUseCase,
+    private val syncDataUseCase: SyncDataUseCase,
     private val observeRemoteDataUseCase: ObserveRemoteDataUseCase,
     private val auth: FirebaseAuth
 ) : ViewModel() {
@@ -64,73 +73,135 @@ class MainViewModel @Inject constructor(
     }
 
     init {
-        // Atualiza as infos sempre que o estado da auth mudar ou na inicialização
+        // Observa a URL persistida no DataStore para garantir UX offline consistente
+        viewModelScope.launch {
+            settingsManager.userPhotoUrl.collect { savedUrl ->
+                if (savedUrl != null) {
+                    _userPhotoUrl.value = savedUrl
+                }
+            }
+        }
+
+        // Inicializa o estado com o valor atual, mas garante que o listener trate a primeira carga
         auth.addAuthStateListener { firebaseAuth ->
             val user = firebaseAuth.currentUser
+            
+            // Atualiza dados básicos imediatamente
             _userName.value = user?.displayName ?: ""
             _userEmail.value = user?.email ?: ""
             _isUserLoggedIn.value = user != null
-            // Não atualizamos a foto aqui para evitar loops com o refreshUserInfo
+            
+            if (user != null) {
+                // Se não temos nada no DataStore ainda, usa o que o Firebase der (pode ser a URL antiga)
+                if (_userPhotoUrl.value == null) {
+                    _userPhotoUrl.value = user.photoUrl?.toString()
+                }
+                refreshUserInfo()
+                startSync()
+            }
         }
         
-        checkAuthIntegrity()
-        refreshUserInfo()
+        // Verificação de integridade apenas se já começar logado
+        if (auth.currentUser != null) {
+            checkAuthIntegrity()
+        }
     }
 
     fun refreshUserInfo() {
         viewModelScope.launch {
+            val user = auth.currentUser ?: return@launch
+            
             try {
-                auth.currentUser?.reload()?.await()
-                val user = auth.currentUser
-                _userName.value = user?.displayName ?: ""
-                _userEmail.value = user?.email ?: ""
-                _isUserLoggedIn.value = user != null
+                // Tenta atualizar do servidor
+                user.reload().await()
+                val updatedUser = auth.currentUser
+                _userName.value = updatedUser?.displayName ?: ""
+                _userEmail.value = updatedUser?.email ?: ""
                 
-                val rawPhotoUrl = user?.photoUrl?.toString()
+                val rawPhotoUrl = updatedUser?.photoUrl?.toString()
                 if (rawPhotoUrl != null) {
-                    // Adiciona um timestamp para forçar o Coil a recarregar a imagem ignorando o cache
-                    val timestamp = System.currentTimeMillis()
-                    val freshPhotoUrl = if (rawPhotoUrl.contains("?")) {
-                        "$rawPhotoUrl&refresh=$timestamp"
+                    if (isOnline()) {
+                        // Online: gera nova URL com timestamp e persiste
+                        val timestamp = System.currentTimeMillis()
+                        val freshPhotoUrl = if (rawPhotoUrl.contains("?")) {
+                            "$rawPhotoUrl&refresh=$timestamp"
+                        } else {
+                            "$rawPhotoUrl?refresh=$timestamp"
+                        }
+                        _userPhotoUrl.value = freshPhotoUrl
+                        settingsManager.setUserPhotoUrl(freshPhotoUrl)
                     } else {
-                        "$rawPhotoUrl?refresh=$timestamp"
+                        // Offline: Mantém o que já está no State (que veio do DataStore no init)
+                        // ou usa a rawPhotoUrl se o State estiver nulo
+                        if (_userPhotoUrl.value == null) {
+                            _userPhotoUrl.value = rawPhotoUrl
+                        }
                     }
-                    _userPhotoUrl.value = freshPhotoUrl
-                } else {
-                    _userPhotoUrl.value = null
                 }
             } catch (e: Exception) {
-                // Falha silenciosa
+                // Se falhar (ex: offline), o estado já foi inicializado com o DataStore no init
             }
         }
     }
 
+    private fun updatePhotoState(rawPhotoUrl: String?, forceRefresh: Boolean) {
+        // Este método pode ser removido pois a lógica foi movida para refreshUserInfo
+    }
+
+    private fun isOnline(): Boolean {
+        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val network = connectivityManager.activeNetwork ?: return false
+        val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
+        return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+    }
+
     private fun checkAuthIntegrity() {
         val user = auth.currentUser ?: return
-        startSync()
         
         viewModelScope.launch {
             try {
                 // Força o Firebase a verificar com o servidor se a conta ainda é válida
                 user.reload().await()
             } catch (e: Exception) {
-                // Se o reload falhar (ex: conta desativada ou excluída no console)
-                auth.signOut()
-                _logoutEvent.emit(Unit)
+                // Lógica robusta para detectar falta de internet
+                val isNetworkError = e is FirebaseNetworkException || 
+                                    e.message?.contains("network", ignoreCase = true) == true ||
+                                    e.cause is java.net.UnknownHostException ||
+                                    e.cause is java.net.ConnectException
+                
+                if (!isNetworkError) {
+                    // Erro crítico de conta (ex: token expirado ou revogado), desloga
+                    auth.signOut()
+                    _logoutEvent.emit(Unit)
+                }
+                // Se for erro de rede, não faz nada e deixa o usuário continuar offline
             }
         }
     }
 
     private fun startSync() {
+        val currentUid = auth.currentUser?.uid
+        if (currentUid == null) {
+            Log.e("SyncDebug", "Abortando sync: UID nulo")
+            return
+        }
+
         viewModelScope.launch {
             try {
-                // Sincroniza o que está local -> remoto primeiro
+                // Pequeno delay para garantir que o token de autenticação esteja pronto no SDK do Firestore
+                kotlinx.coroutines.delay(1000)
+                
+                Log.d("SyncDebug", "Iniciando sync para UID: $currentUid")
+                // Tenta baixar os dados remotos primeiro (Sincronização Inicial/Full)
+                syncDataUseCase()
+
+                // Sincroniza o que está local -> remoto (caso tenha ficado algo pendente no worker ou manual)
                 syncLocalToRemoteUseCase()
                 
                 // Começa a observar mudanças no Firestore para atualizar o local em tempo real
                 observeRemoteDataUseCase()
             } catch (e: Exception) {
-                // Falha silenciosa
+                Log.e("SyncDebug", "Erro ao iniciar sincronização: ${e.message}")
             }
         }
     }

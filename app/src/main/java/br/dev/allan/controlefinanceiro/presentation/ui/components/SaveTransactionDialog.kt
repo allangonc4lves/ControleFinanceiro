@@ -133,7 +133,6 @@ fun SaveTransactionDialog(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .alpha(if (uiState.isLoading) 0.5f else 1f)
                         .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
@@ -329,10 +328,6 @@ fun SaveTransactionDialog(
                             )
                         }
                     }
-                }
-
-                if (uiState.isLoading) {
-                    Loading()
                 }
             }
         }

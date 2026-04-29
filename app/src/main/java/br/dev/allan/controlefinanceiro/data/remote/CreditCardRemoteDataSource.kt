@@ -31,18 +31,13 @@ class CreditCardRemoteDataSource @Inject constructor(
     suspend fun saveCard(card: CreditCard) {
         val userId = auth.currentUser?.uid ?: return
         val dto = card.toDto(userId)
-        android.util.Log.d("FirestoreSync", "Tentando salvar cartão: ${dto.id} para o usuário: $userId")
-        try {
-            firestore.collection("users")
-                .document(userId)
-                .collection(collectionPath)
-                .document(card.id)
-                .set(dto)
-                .await()
-            android.util.Log.d("FirestoreSync", "Cartão salvo com sucesso no Firestore: ${dto.id}")
-        } catch (e: Exception) {
-            android.util.Log.e("FirestoreSync", "Erro ao salvar cartão no Firestore: ${e.message}", e)
-        }
+        android.util.Log.d("FirestoreSync", "Agendando sincronização do cartão: ${dto.id}")
+        firestore.collection("users")
+            .document(userId)
+            .collection(collectionPath)
+            .document(card.id)
+            .set(dto)
+            .await()
     }
 
     suspend fun deleteCard(cardId: String) {
@@ -56,7 +51,11 @@ class CreditCardRemoteDataSource @Inject constructor(
     }
 
     suspend fun fetchAllCards(): List<CreditCardDto> {
-        val userId = auth.currentUser?.uid ?: return emptyList()
+        val userId = auth.currentUser?.uid ?: run {
+            android.util.Log.e("SyncDebug", "fetchAllCards: userId é nulo!")
+            return emptyList()
+        }
+        android.util.Log.d("SyncDebug", "fetchAllCards: buscando cartões para o usuário $userId")
         return firestore.collection("users")
             .document(userId)
             .collection(collectionPath)

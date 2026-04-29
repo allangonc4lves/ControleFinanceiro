@@ -82,15 +82,12 @@ class CreditCardsViewModel @Inject constructor(
     }
 
     fun saveCard() {
-        uiState = uiState.copy(isLoading = true)
-
         val bankNameResult = validateText.execute(uiState.bankName)
         val brandResult = validateText.execute(uiState.brand)
         val lastDigitsResult = validateLastDigits.execute(uiState.lastDigits)
 
         if (listOf(bankNameResult, brandResult, lastDigitsResult).any { !it.successful }) {
             uiState = uiState.copy(
-                isLoading = false,
                 bankNameError = bankNameResult.errorMessageRes?.let { "error_res_$it" },
                 brandError = brandResult.errorMessageRes?.let { "error_res_$it" },
                 lastDigitsError = lastDigitsResult.errorMessageRes?.let { "error_res_$it" }
@@ -110,33 +107,20 @@ class CreditCardsViewModel @Inject constructor(
         )
 
         viewModelScope.launch {
-            val executionTime = measureTimeMillis {
-                if (currentCardId == null) {
-                    repository.addCard(card)
-                } else {
-                    repository.updateCard(card)
-                }
-
-                _uiEvent.send(SaveCreditCardUiEvent.SaveSuccess)
+            if (currentCardId == null) {
+                repository.addCard(card)
+            } else {
+                repository.updateCard(card)
             }
-
-            val remainingTime = 2000L - executionTime
-            if (remainingTime > 0) delay(remainingTime)
-            uiState = uiState.copy(isLoading = false)
+            _uiEvent.send(SaveCreditCardUiEvent.SaveSuccess)
         }
     }
 
     fun removeCard() {
         currentCardId?.let { id ->
             viewModelScope.launch {
-                uiState = uiState.copy(isLoading = true)
-                val executionTime = measureTimeMillis {
-                    repository.removeCard(id)
-                    _uiEvent.send(SaveCreditCardUiEvent.SaveSuccess)
-                }
-                val remainingTime = 2000L - executionTime
-                if (remainingTime > 0) delay(remainingTime)
-                uiState = uiState.copy(isLoading = false)
+                repository.removeCard(id)
+                _uiEvent.send(SaveCreditCardUiEvent.SaveSuccess)
             }
         }
     }

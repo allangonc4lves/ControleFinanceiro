@@ -1,11 +1,12 @@
 package br.dev.allan.controlefinanceiro.data.repository
 
+import androidx.work.*
 import br.dev.allan.controlefinanceiro.data.local.PaymentStatusEntity
 import br.dev.allan.controlefinanceiro.data.local.TransactionDao
 import br.dev.allan.controlefinanceiro.data.local.TransactionEntity
 import br.dev.allan.controlefinanceiro.data.local.mapper.toDomain
 import br.dev.allan.controlefinanceiro.data.local.mapper.toEntity
-import br.dev.allan.controlefinanceiro.data.remote.TransactionRemoteDataSource
+import br.dev.allan.controlefinanceiro.data.worker.FirestoreSyncWorker
 import br.dev.allan.controlefinanceiro.domain.model.CategorySum
 import br.dev.allan.controlefinanceiro.domain.model.Transaction
 import br.dev.allan.controlefinanceiro.domain.repository.TransactionRepository
@@ -18,11 +19,12 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class TransactionRepositoryImpl @Inject constructor(
     private val transactionDao: TransactionDao,
-    private val remoteDataSource: TransactionRemoteDataSource
+    private val workManager: WorkManager
 ): TransactionRepository {
 
     override fun getTransactionsBetweenDates(startDate: Long, endDate: Long): Flow<List<TransactionEntity>> {
@@ -135,7 +137,7 @@ class TransactionRepositoryImpl @Inject constructor(
     override suspend fun deleteTransactionGroup(groupId: String) {
         val transactionsToDelete = transactionDao.getTransactionsByGroupId(groupId)
         transactionDao.deleteTransactionGroup(groupId)
-        remoteDataSource.deleteTransactions(transactionsToDelete.map { it.id })
+        transactionsToDelete.forEach { scheduleSync(it.id, FirestoreSyncWorker.OP_DELETE) }
     }
 
     override fun getExpensesByCategory(start: Long, end: Long): Flow<List<CategorySum>> {
@@ -157,23 +159,32 @@ class TransactionRepositoryImpl @Inject constructor(
 
     override suspend fun deleteTransaction(id: String) {
         transactionDao.deleteTransactionById(id)
-        remoteDataSource.deleteTransaction(id)
+        scheduleSync(id, FirestoreSyncWorker.OP_DELETE)
     }
 
     override suspend fun insertTransaction(transaction: Transaction) {
         transactionDao.insertTransaction(transaction.toEntity())
-        remoteDataSource.saveTransaction(transaction)
+        scheduleSync(transaction.id, FirestoreSyncWorker.OP_UPSERT)
     }
 
     override suspend fun insertTransactions(transactions: List<Transaction>) {
         val entities = transactions.map { it.toEntity() }
         transactionDao.insertTransactions(entities)
-        remoteDataSource.syncTransactions(transactions)
+        transactions.forEach { scheduleSync(it.id, FirestoreSyncWorker.OP_UPSERT) }
+    }
+
+    override suspend fun insertTransactionsSilent(transactions: List<Transaction>) {
+        val entities = transactions.map { it.toEntity() }
+        transactionDao.insertTransactions(entities)
+    }
+
+    override suspend fun deleteTransactionSilent(id: String) {
+        transactionDao.deleteTransactionById(id)
     }
 
     override suspend fun updateTransaction(transaction: Transaction) {
         transactionDao.updateTransaction(transaction.toEntity())
-        remoteDataSource.saveTransaction(transaction)
+        scheduleSync(transaction.id, FirestoreSyncWorker.OP_UPSERT)
     }
 
     override suspend fun updateTransactionGroup(
@@ -184,14 +195,14 @@ class TransactionRepositoryImpl @Inject constructor(
         creditCardId: String?
     ) {
         transactionDao.updateTransactionGroup(groupId, title, amount, category.name, creditCardId)
-        val updatedTransactions = transactionDao.getTransactionsByGroupId(groupId).map { it.toDomain() }
-        remoteDataSource.syncTransactions(updatedTransactions)
+        val updatedTransactions = transactionDao.getTransactionsByGroupId(groupId)
+        updatedTransactions.forEach { scheduleSync(it.id, FirestoreSyncWorker.OP_UPSERT) }
     }
 
     override suspend fun updateCardIdByGroupId(groupId: String, cardId: String?) {
         transactionDao.updateCardIdByGroupId(groupId, cardId)
-        val updatedTransactions = transactionDao.getTransactionsByGroupId(groupId).map { it.toDomain() }
-        remoteDataSource.syncTransactions(updatedTransactions)
+        val updatedTransactions = transactionDao.getTransactionsByGroupId(groupId)
+        updatedTransactions.forEach { scheduleSync(it.id, FirestoreSyncWorker.OP_UPSERT) }
     }
 
     override suspend fun getTransactionsByGroupId(groupId: String): List<Transaction> {
@@ -200,7 +211,30 @@ class TransactionRepositoryImpl @Inject constructor(
 
     override suspend fun deleteTransaction(transaction: Transaction) {
         transactionDao.deleteTransaction(transaction.toEntity())
-        remoteDataSource.deleteTransaction(transaction.id)
+        scheduleSync(transaction.id, FirestoreSyncWorker.OP_DELETE)
+    }
+
+    private fun scheduleSync(id: String, operation: String) {
+        val data = Data.Builder()
+            .putString(FirestoreSyncWorker.KEY_ENTITY_ID, id)
+            .putString(FirestoreSyncWorker.KEY_ENTITY_TYPE, FirestoreSyncWorker.TYPE_TRANSACTION)
+            .putString(FirestoreSyncWorker.KEY_OPERATION, operation)
+            .build()
+
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .build()
+
+        val syncRequest = OneTimeWorkRequestBuilder<FirestoreSyncWorker>()
+            .setConstraints(constraints)
+            .setInputData(data)
+            .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, WorkRequest.MIN_BACKOFF_MILLIS, TimeUnit.MILLISECONDS)
+            .build()
+
+        workManager.enqueueUniqueWork(
+            "sync_transaction_$id",
+            ExistingWorkPolicy.REPLACE,
+            syncRequest
+        )
     }
 }
-

@@ -94,20 +94,17 @@ class TransactionViewModel @Inject constructor(
 
     fun save(editAll: Boolean) {
         viewModelScope.launch {
-            updateState { it.copy(isLoading = true) }
             val result = saveUseCase.execute(_uiState.value, currentId, editAll)
 
             if (result.isSuccess) {
                 _uiEvent.send(SaveTransactionUiEvent.SaveSuccess)
             } else {
-                val errorMsg = result.exceptionOrNull()?.message
                 updateState { state ->
                     val titleRes = saveUseCase.validateText.execute(state.title)
                     val amountRes = saveUseCase.validateAmount.execute(state.amountInput)
                     val catRes = saveUseCase.validateCategory.execute(state.category)
 
                     state.copy(
-                        isLoading = false,
                         titleError = titleRes.errorMessageRes?.let { "error_res_$it" },
                         amountError = amountRes.errorMessageRes?.let { "error_res_$it" },
                         categoryError = catRes.errorMessageRes?.let { "error_res_$it" }
@@ -120,7 +117,6 @@ class TransactionViewModel @Inject constructor(
     fun delete() {
         currentId?.let { id ->
             viewModelScope.launch {
-                updateState { it.copy(isLoading = true) }
                 val transaction = repository.getTransactionById(id)
                 if (transaction?.groupId != null) {
                     repository.deleteTransactionGroup(transaction.groupId)

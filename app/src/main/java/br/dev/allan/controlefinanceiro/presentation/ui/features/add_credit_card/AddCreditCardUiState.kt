@@ -10,7 +10,6 @@ data class AddCreditCardUiState (
     val bankNameError: String? = null,
     val brandError: String? = null,
     val lastDigitsError: String? = null,
-    val isLoading: Boolean = false,
     val activated: Boolean = true,
     val palette: List<Long> = listOf(
         0xFF1E88E5L, // azul

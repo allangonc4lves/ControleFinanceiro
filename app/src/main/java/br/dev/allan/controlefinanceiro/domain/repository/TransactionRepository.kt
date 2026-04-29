@@ -25,6 +25,8 @@ interface TransactionRepository {
     suspend fun deleteTransaction(id: String)
     suspend fun insertTransaction(transaction: Transaction)
     suspend fun insertTransactions(transactions: List<Transaction>)
+    suspend fun insertTransactionsSilent(transactions: List<Transaction>)
+    suspend fun deleteTransactionSilent(id: String)
     suspend fun updateTransaction(transaction: Transaction)
     suspend fun updateTransactionGroup(
         groupId: String,

@@ -19,9 +19,17 @@ class ObserveRemoteDataUseCase @Inject constructor(
     suspend operator fun invoke() = coroutineScope {
         // Observa mudanças nas transações
         launch {
-            transactionRemoteDataSource.observeTransactions().collectLatest { dtos ->
-                val remoteTransactions = dtos.map { it.toDomain() }
-                remoteTransactions.forEach { transactionRepository.insertTransaction(it) }
+            transactionRemoteDataSource.observeTransactions().collectLatest { changes ->
+                changes.forEach { (dto, type) ->
+                    when (type) {
+                        br.dev.allan.controlefinanceiro.data.remote.TransactionRemoteDataSource.DocumentChangeType.UPSERT -> {
+                            transactionRepository.insertTransactionsSilent(listOf(dto.toDomain()))
+                        }
+                        br.dev.allan.controlefinanceiro.data.remote.TransactionRemoteDataSource.DocumentChangeType.DELETE -> {
+                            transactionRepository.deleteTransactionSilent(dto.id)
+                        }
+                    }
+                }
             }
         }
 
@@ -29,7 +37,9 @@ class ObserveRemoteDataUseCase @Inject constructor(
         launch {
             creditCardRemoteDataSource.observeCards().collectLatest { dtos ->
                 val remoteCards = dtos.map { it.toDomain() }
-                remoteCards.forEach { creditCardRepository.addCard(it) }
+                if (remoteCards.isNotEmpty()) {
+                    creditCardRepository.addCardsSilent(remoteCards)
+                }
             }
         }
     }
